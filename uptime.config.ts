@@ -115,6 +115,17 @@ const workerConfig: WorkerConfig = {
       timeout: 10000,
     },
     {
+      id: 'tools',
+      name: '知了工具箱',
+      method: 'HEAD',
+      target: 'https://tools.weizwz.com/',
+      statusPageLink: 'https://tools.weizwz.com/',
+      preview: 'https://p.weizwz.com/tool/tools.weizwz.com_8_5_202357_9828b50f69529ea7.webp',
+      hideLatencyChart: false,
+      expectedCodes: [200],
+      timeout: 10000,
+    },
+    {
       id: 'fun_animation',
       name: 'FunAnimation',
       method: 'HEAD',

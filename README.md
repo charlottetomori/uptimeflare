@@ -1,60 +1,56 @@
 <div align="right">
-  <a title="English" href="README.md"><img src="https://img.shields.io/badge/-English-A31F34?style=for-the-badge" alt="English" /></a>
-  <a title="简体中文" href="README_zh-CN.md"><img src="https://img.shields.io/badge/-%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-545759?style=for-the-badge" alt="简体中文"></a>
+  <a title="English" href="README.md"><img src="https://img.shields.io/badge/-English-545759?style=for-the-badge" alt="English"></a>
+  <a title="简体中文" href="README_zh-CN.md"><img src="https://img.shields.io/badge/-%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-A31F34?style=for-the-badge" alt="简体中文"></a>
 </div>
 
 # ✔[UptimeFlare](https://github.com/weizwz/UptimeFlare)
 
-A more advanced, serverless, and free uptime monitoring & status page solution, powered by Cloudflare Workers, complete with a user-friendly interface.
+A feature-rich, serverless, and free uptime monitoring and status page powered by Cloudflare Workers.
 
-Fork has beautified the interface at https://github.com/lyc8503/UptimeFlare
-
-🎉 **[UPDATE 2026/01/03]** I have just migrated UptimeFlare from KV to D1 Database. I also updated the Terraform Cloudflare provider to v5 and improved the deployment process. The data structure has been optimized to resolve long-standing performance issues.
-
-New users can deploy directly, while existing users can have a simple auto migration process (upgrade docs below)! Feel free to open an issue if you run into any trouble deploying.
+Forked from https://github.com/lyc8503/UptimeFlare with an interface beautification.
 
 ## ⭐Features
 
-- Open-source, easy to deploy (in under 10 minutes, no local tools required), and free
-- Monitoring capabilities
-  - Up to 50 checks at 1-minute intervals
-  - Geo-specific checks from over [310 cities](https://www.cloudflare.com/network/) worldwide
+- Open source, easy to deploy (no local tools required, under 10 minutes), and completely free
+- Monitoring features
+  - Supports up to 50 checks at 1-minute precision
+  - Support for choosing monitoring locations from [310+ cities](https://www.cloudflare.com/network/) worldwide
   - Support for HTTP/HTTPS/TCP port monitoring
-  - Up to 90-day uptime history and uptime percentage tracking
-  - Customizable request methods, headers, and body for HTTP(s)
-  - Custom status code & keyword checks for HTTP(s)
-  - Downtime notification supporting [100+ notification channels](https://github.com/caronc/apprise/wiki)
+  - Up to 90 days of uptime history and uptime percentage tracking
+  - Customizable HTTP(s) request methods, headers, and body
+  - Customizable HTTP(s) status code and keyword checks
+  - Downtime notifications via [100+ notification channels](https://github.com/caronc/apprise/wiki)
   - Customizable Webhook
-  - Multi-language support (English/Chinese)
+  - Multi-language support (Chinese/English)
 - Status page
-  - Interactive ping (response time) chart for all types of monitors
-  - Scheduled maintenances alerts & Incident history page
-  - Responsive UI that adapts to your system theme
-  - Customizable status page
-  - Use your own domain with CNAME
-  - Optional password authentication (private status page)
-  - JSON API for fetching realtime status data
+  - Interactive ping (response time) charts for all monitor types
+  - Scheduled maintenance alerts and incident history page
+  - Responsive UI that adapts to desktop/mobile screens, with light/dark system themes
+  - Rich configuration options for the status page
+  - Use your own domain with CNAME support
+  - Optional password protection for private status pages
+  - JSON API for fetching real-time status data
 
 ### 🆕Enhancements (Fork)
 
-The following enhancements have been added in this fork:
+This fork adds the following enhancements:
 
-- **Modern UI redesign** — Refreshed interface using Tailwind CSS v4, glassmorphism effects, and premium visual design
-- **Monitor card component** — Independent monitor cards displaying status, latency, and maintenance state at a glance
-- **In-page auto-refresh** — Status data is polled every 180 seconds via the `/api/status` API without full page reload
-- **Status API with CORS protection** — Secure `/api/status` endpoint with origin-based access control to prevent cross-domain abuse
-- **Incident detail modal** — Click on uptime bars to view detailed incident information including duration and error messages
-- **Incidents drawer** — A slide-out drawer to browse historical incidents, filterable by month and monitor
-- **Real-time incident display** — Shows actual monitoring events with ongoing/resolved status in the incidents drawer
-- **Mobile responsive** — Optimized responsive layout for mobile devices
-- **Monitor grouping** — Reorganized monitor groups with improved spacing and layout
-- **Human-readable duration** — Improved time unit display for incident durations
-- **Custom favicon** — Support for custom site icon
-- **Local development support** — Added local development environment configuration
+- **Modern UI redesign** — refreshed interface using Tailwind CSS v4, glassmorphism effects, and premium visual design
+- **Monitor card component** — independent monitor cards showing status, latency, and maintenance information clearly
+- **In-page auto-refresh** — status data is polled every 180 seconds through `/api/status`, without full-page reload
+- **Status API with CORS protection** — secure `/api/status` endpoint with origin-based access control to prevent cross-origin abuse
+- **Incident detail modal** — click uptime bars to see detailed incident information, including duration and error description
+- **Incident history drawer** — slide-out drawer for browsing historical incidents, filterable by month and monitor
+- **Real-time event display** — shows actual monitoring events with ongoing/resolved states in the event drawer
+- **Mobile-friendly design** — optimized responsive layout for mobile screens
+- **Monitor grouping** — reorganized monitor groups with improved spacing and layout
+- **Human-friendly duration display** — improved incident duration time unit presentation
+- **Custom site icon** — support for custom favicon
+- **Local development support** — added local development environment configuration
 
 ## 👀Demo
 
-My status page (Online demo): https://status.weizwz.com/
+My own status page (online demo): https://status.weizwz.com/
 
 Some screenshots:
 
@@ -62,46 +58,4 @@ Some screenshots:
 
 ## ⚡Quickstart / 📄Documentation
 
-Please refer to [Wiki](https://github.com/lyc8503/UptimeFlare/wiki)
-
-## 🚀Upgrade existing deployments
-
-Get the latest features right away with [simple upgrade process](https://github.com/lyc8503/UptimeFlare/wiki/Synchronize-updates-from-upstream)
-
-## ⚙️Docs for developer
-
-To contribute new features or customize your deployment furthermore, see [here](https://github.com/lyc8503/UptimeFlare/wiki/How-to-develop).
-
-## New features (TODOs)
-
-- [x] Specify region for monitors
-- [x] TCP `opened` promise
-- [x] Use apprise to support various notification channels
-- [x] ~~Telegram example~~
-- [x] ~~[Bark](https://bark.day.app) example~~
-- [x] ~~Email notification via Cloudflare Email Workers~~
-- [x] Improve docs by providing simple examples
-- [x] Notification grace period
-- [ ] SSL certificate checks
-- [x] ~~Self-host Dockerfile~~
-- [x] Incident history
-- [x] Improve `checkLocationWorkerRoute` and fix possible `proxy failed`
-- [x] Groups
-- [x] Remove old incidents
-- [x] ~~Known issue~~: `fetch` doesn't support non-standard port (resolved after CF update)
-- [x] Compatibility date update
-- [x] Scheduled Maintenance
-- [x] Add docs for dev
-- [x] Migration to Terraform Cloudflare provider version 5.x
-- [x] Cloudflare D1 database
-- [x] Scheduled maintenances (via IIFE)
-- [x] Simpler config example
-- [x] Upcoming maintenances
-- [x] Universal Webhook upgrade
-- [x] i18n...? (maybe)
-- [ ] ICMP via proxy?
-- [x] Add default UA
-- [x] Customizable footer
-- [x] New header logo
-- [x] Improve CPU time usage
-- [x] Local deployment (docs WIP)
+Please refer to the [Wiki](https://github.com/lyc8503/UptimeFlare/wiki)

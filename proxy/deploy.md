@@ -62,7 +62,7 @@ https://uptimeflare-proxy.vercel.app
   target: 'https://example.com/',
   expectedCodes: [200],
   timeout: 10000,
-  checkProxy: 'https://uptimeflare-proxy.vercel.app',  // 填入你的 Vercel 地址
+  checkProxy: 'https://xxx-proxy.vercel.app',  // 填入你的 Vercel 地址
 },
 ```
 
@@ -74,4 +74,24 @@ https://uptimeflare-proxy.vercel.app
 
 ```bash
 vercel --prod
+```
+
+## 其他问题
+
+### 1. Vercel 代理环境使用 HEAD 方法请求某些站点时，会被拦截（返回 503）或导致连接挂起（Timeout）。
+
+这是由于 Cloudflare WAF 策略或服务端框架（如 Next.js）的处理机制差异所致，改用 GET 方法即可正常连通。
+
+**HEAD** 方法只获取响应头而不下载完整的页面内容，比 GET 更节省带宽和时间。因此，其他服务保持 HEAD 即可，无需修改。
+
+```ts
+{
+  id: 'example',
+  name: '示例服务',
+  method: 'GET',  // 切换成 GET 方法即可正常连通
+  target: 'https://example.com/',
+  expectedCodes: [200],
+  timeout: 10000,
+  checkProxy: 'https://xxx-proxy.vercel.app',  // 填入你的 Vercel 地址
+},
 ```

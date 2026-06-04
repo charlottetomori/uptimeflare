@@ -64,7 +64,7 @@ const workerConfig: WorkerConfig = {
     {
       id: 'weiwz',
       name: '主页',
-      method: 'HEAD',
+      method: 'GET',
       target: 'https://weizwz.com/',
       statusPageLink: 'https://weizwz.com/',
       preview: 'https://p.weizwz.com/weizwz_home_fa1de45a5b1594a1.webp',
@@ -98,7 +98,7 @@ const workerConfig: WorkerConfig = {
     {
       id: 'nav',
       name: '唯知导航',
-      method: 'HEAD',
+      method: 'GET',
       target: 'https://nav.weizwz.com/',
       statusPageLink: 'https://nav.weizwz.com/',
       preview: 'https://p.weizwz.com/nav/20251120_110028_78c15d3713752f31.webp',

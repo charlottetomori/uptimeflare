@@ -52,7 +52,7 @@ https://uptimeflare-proxy.vercel.app
 
 ### 4. 更新 UptimeFlare 配置
 
-在 `uptime.config.ts` 的每个监控项中加入 `checkProxy`：
+在 `uptime.config.ts` 的监控项中加入 `checkProxy`（仅当目标服务在 Cloudflare 且你的 UptimeFlare 与之同账号部署时）：
 
 ```ts
 {
@@ -80,17 +80,17 @@ vercel --prod
 
 ### 1. Vercel 代理环境使用 HEAD 方法请求某些站点时，会被拦截（返回 503）或导致连接挂起（Timeout）。
 
-这是由于 Cloudflare WAF 策略或服务端框架（如 Next.js）的处理机制差异所致，改用 GET 方法即可正常连通。
+这是由于 Cloudflare WAF 策略（对 Vercel 代理 IP 进行了频率限制或反爬拦截）或服务端框架（如 Next.js）处理机制差异所致。改用 `OPTIONS` 方法并允许返回 `405` 状态码，可以完美绕过这些限制和超时问题。
 
-**HEAD** 方法只获取响应头而不下载完整的页面内容，比 GET 更节省带宽和时间。因此，其他服务保持 HEAD 即可，无需修改。
+**OPTIONS** 方法作为预检请求，通常被 WAF 直接放行，且不会触发服务端的完整渲染，如果返回 405 则证明目标服务器正常存活。
 
 ```ts
 {
   id: 'example',
   name: '示例服务',
-  method: 'GET',  // 切换成 GET 方法即可正常连通
+  method: 'OPTIONS',  // 切换成 OPTIONS 方法绕过拦截和超时
   target: 'https://example.com/',
-  expectedCodes: [200],
+  expectedCodes: [200, 405], // 允许 405 状态码
   timeout: 10000,
   checkProxy: 'https://xxx-proxy.vercel.app',  // 填入你的 Vercel 地址
 },

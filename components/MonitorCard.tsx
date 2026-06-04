@@ -33,7 +33,7 @@ export default function MonitorCard({
   // Determine status: maintenance > down > up
   const status = hasMaintenance
     ? 'maintenance'
-    : incident && incident.length > 0 && incident[incident.length - 1].end === undefined
+    : incident && incident.length > 0 && incident[incident.length - 1].end === null
     ? 'down'
     : 'up'
 

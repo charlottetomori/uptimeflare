@@ -28,7 +28,7 @@ export default function MonitorDetail({
     )
 
   const lastIncident = state.incident[monitor.id].slice(-1)[0]
-  const isUp = lastIncident.end !== undefined
+  const isUp = lastIncident.end !== null
 
   // Hide real status icon if monitor is in maintenance
   const now = new Date()

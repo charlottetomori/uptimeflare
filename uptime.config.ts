@@ -110,7 +110,7 @@ const workerConfig: WorkerConfig = {
     {
       id: 'cover',
       name: 'ThisCover',
-      method: 'HEAD',
+      method: 'GET',
       target: 'https://cover.weizwz.com/',
       statusPageLink: 'https://cover.weizwz.com/',
       preview: 'https://p.weizwz.com/cover/cover.weizwz.com_8_5_b3d6c714f8bb59de.webp',
@@ -122,7 +122,7 @@ const workerConfig: WorkerConfig = {
     {
       id: 'tools',
       name: '知了工具箱',
-      method: 'HEAD',
+      method: 'GET',
       target: 'https://tools.weizwz.com/',
       statusPageLink: 'https://tools.weizwz.com/',
       preview: 'https://p.weizwz.com/tool/tools.weizwz.com_8_5_202357_9828b50f69529ea7.webp',

@@ -78,19 +78,20 @@ vercel --prod
 
 ## 其他问题
 
-### 1. Vercel 代理环境使用 HEAD 方法请求某些站点时，会被拦截（返回 503）或导致连接挂起（Timeout）。
+### 1. Vercel 代理环境请求某些站点时报错（503）或超时（Timeout）。
 
-这是由于 Cloudflare WAF 策略（对 Vercel 代理 IP 进行了频率限制或反爬拦截）或服务端框架（如 Next.js）处理机制差异所致。改用 `OPTIONS` 方法并允许返回 `405` 状态码，可以完美绕过这些限制和超时问题。
+由于 Cloudflare WAF 限制或服务端框架（如 Next.js）的处理差异，默认的 `HEAD` 方法可能会失败。请根据报错类型尝试以下两种方法：
 
-**OPTIONS** 方法作为预检请求，通常被 WAF 直接放行，且不会触发服务端的完整渲染，如果返回 405 则证明目标服务器正常存活。
+- **若是 503 报错**：通常出现在 Next.js 等框架的根域名上。请将探测方法改用 `GET`，`expectedCodes` 保持 `[200]`。
+- **若是 Timeout 超时**：请将探测方法改用 `OPTIONS`，并将 `expectedCodes` 改为 `[200, 405]`。`OPTIONS` 作为预检请求常被 WAF 放行，返回 405 即可证明服务存活。
 
 ```ts
 {
   id: 'example',
   name: '示例服务',
-  method: 'OPTIONS',  // 切换成 OPTIONS 方法绕过拦截和超时
+  method: 'GET',  // 或 'OPTIONS'
   target: 'https://example.com/',
-  expectedCodes: [200, 405], // 允许 405 状态码
+  expectedCodes: [200], // 若为 OPTIONS 请配置 [200, 405]
   timeout: 10000,
   checkProxy: 'https://xxx-proxy.vercel.app',  // 填入你的 Vercel 地址
 },

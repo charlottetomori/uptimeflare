@@ -164,7 +164,7 @@ export default function MonitorCard({
                 })
               )
               setDrawerDowntime(formatDuration(dayDownTime))
-              setDrawerIncidents(incidentReasons)
+              setDrawerIncidents(incidentReasons.reverse())
               setDrawerOpened(true)
             }
           }}

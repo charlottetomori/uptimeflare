@@ -1,4 +1,4 @@
-import { Drawer, Group, Select, Button, Stack, Card, Text, Badge } from '@mantine/core'
+import { Drawer, Group, Select, Button, Stack, Card, Text, Badge, Pagination } from '@mantine/core'
 import {
   IconChevronLeft,
   IconChevronRight,
@@ -244,6 +244,17 @@ export default function IncidentsDrawer({
   const { t } = useTranslation('common')
   const [selectedMonitor, setSelectedMonitor] = useState<string | null>('')
   const [selectedMonth, setSelectedMonth] = useState(getSelectedMonth())
+  const [activePage, setPage] = useState(1)
+
+  const handleMonitorChange = (val: string | null) => {
+    setSelectedMonitor(val)
+    setPage(1)
+  }
+
+  const handleMonthChange = (val: string) => {
+    setSelectedMonth(val)
+    setPage(1)
+  }
 
   // 从 state 提取真实故障数据
   const realIncidents = extractIncidents(state, monitors, selectedMonth)
@@ -264,6 +275,13 @@ export default function IncidentsDrawer({
     })),
   ]
 
+  const itemsPerPage = 20
+  const totalPages = Math.ceil(filteredIncidents.length / itemsPerPage)
+  const paginatedIncidents = filteredIncidents.slice(
+    (activePage - 1) * itemsPerPage,
+    activePage * itemsPerPage
+  )
+
   return (
     <Drawer
       opened={opened}
@@ -282,7 +300,7 @@ export default function IncidentsDrawer({
           placeholder={t('Select monitor')}
           data={monitorOptions}
           value={selectedMonitor}
-          onChange={setSelectedMonitor}
+          onChange={handleMonitorChange}
           clearable
           leftSection={<IconFilter size={16} />}
           radius="md"
@@ -293,7 +311,7 @@ export default function IncidentsDrawer({
             <Button
               variant="subtle"
               leftSection={<IconChevronLeft size={18} />}
-              onClick={() => setSelectedMonth(prev)}
+              onClick={() => handleMonthChange(prev)}
               color="gray"
             >
               {t('Backwards')}
@@ -309,7 +327,7 @@ export default function IncidentsDrawer({
             <Button
               variant="subtle"
               rightSection={<IconChevronRight size={18} />}
-              onClick={() => setSelectedMonth(next)}
+              onClick={() => handleMonthChange(next)}
               color="gray"
             >
               {t('Forward')}
@@ -326,9 +344,16 @@ export default function IncidentsDrawer({
             {filteredIncidents.length === 0 && maintenanceEvents.length === 0 ? (
               <NoIncidentsAlert />
             ) : (
-              filteredIncidents.map((incident, i) => (
+              paginatedIncidents.map((incident, i) => (
                 <IncidentCard key={`i-${i}`} incident={incident} t={t} />
               ))
+            )}
+
+            {/* 分页组件 */}
+            {totalPages > 1 && (
+              <Group justify="center" mt="md">
+                <Pagination total={totalPages} value={activePage} onChange={setPage} />
+              </Group>
             )}
           </Stack>
         </Card>

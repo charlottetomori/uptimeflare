@@ -64,13 +64,17 @@ const workerConfig: WorkerConfig = {
     {
       id: 'weiwz',
       name: '主页',
-      method: 'GET',
-      target: 'https://weizwz.com/',
+      method: 'OPTIONS',
+      target: 'https://www.weizwz.com/',
       statusPageLink: 'https://weizwz.com/',
       preview: 'https://p.weizwz.com/weizwz_home_fa1de45a5b1594a1.webp',
       hideLatencyChart: false,
-      expectedCodes: [200],
+      expectedCodes: [200, 405],
       timeout: 10000,
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      },
       checkProxy: 'https://uptimeflare-proxy.vercel.app',
     },
     {

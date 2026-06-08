@@ -45,7 +45,7 @@ const workerConfig: WorkerConfig = {
       target: 'https://modelscope.cn/studios/zhaoyangbxx/zhao',
       statusPageLink: 'https://modelscope.cn/studios/zhaoyangbxx/zhao',
       preview:
-        'https://image.thum.io/get/width/1200/https://modelscope.cn/studios/zhaoyangbxx/zhao',
+        'https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAEVLuZqJoUGNwZNrH6Mxu0JzSMc5T_gkQACKTEAApLWMVUN2e7xavp-UzsE.png',
       hideLatencyChart: false,
       expectedCodes: [200],
       timeout: 15000,

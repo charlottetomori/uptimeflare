@@ -6,6 +6,14 @@ import {
   MonitorStateCompacted,
 } from '../../types/config'
 
+function hexToBytes(hex: string): Uint8Array {
+  const bytes = new Uint8Array(hex.length / 2)
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = Number.parseInt(hex.slice(i * 2, i * 2 + 2), 16)
+  }
+  return bytes
+}
+
 export async function getFromStore(env: Env, key: string): Promise<string | null> {
   if (!env.UPTIMEFLARE_D1) return null
   const stmt = env.UPTIMEFLARE_D1.prepare('SELECT value FROM uptimeflare WHERE key = ?')
@@ -84,10 +92,8 @@ export class CompactedMonitorStateWrapper {
         }
       })
 
-      // @ts-expect-error
-      const timeArr = new Uint32Array(Uint8Array.fromHex(latencies.time).buffer)
-      // @ts-expect-error
-      const pingArr = new Uint16Array(Uint8Array.fromHex(latencies.ping).buffer)
+      const timeArr = new Uint32Array(hexToBytes(latencies.time).buffer)
+      const pingArr = new Uint16Array(hexToBytes(latencies.ping).buffer)
 
       if (timeArr.length !== pingArr.length || timeArr.length !== locUncompacted.length) {
         throw new Error(
@@ -203,10 +209,8 @@ export class CompactedMonitorStateWrapper {
     let latencies = this.data.latency[monitorId]
 
     return {
-      // @ts-expect-error
-      time: new Uint32Array(Uint8Array.fromHex(latencies.time.slice(0, 8)).buffer)[0],
-      // @ts-expect-error
-      ping: new Uint16Array(Uint8Array.fromHex(latencies.ping.slice(0, 4)).buffer)[0],
+      time: new Uint32Array(hexToBytes(latencies.time.slice(0, 8)).buffer)[0],
+      ping: new Uint16Array(hexToBytes(latencies.ping.slice(0, 4)).buffer)[0],
       loc: latencies.loc.v[0],
     }
   }
@@ -215,10 +219,8 @@ export class CompactedMonitorStateWrapper {
     let latencies = this.data.latency[monitorId]
 
     return {
-      // @ts-expect-error
-      time: new Uint32Array(Uint8Array.fromHex(latencies.time.slice(-8)).buffer)[0],
-      // @ts-expect-error
-      ping: new Uint16Array(Uint8Array.fromHex(latencies.ping.slice(-4)).buffer)[0],
+      time: new Uint32Array(hexToBytes(latencies.time.slice(-8)).buffer)[0],
+      ping: new Uint16Array(hexToBytes(latencies.ping.slice(-4)).buffer)[0],
       loc: latencies.loc.v[latencies.loc.v.length - 1],
     }
   }

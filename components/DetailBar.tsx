@@ -41,9 +41,10 @@ export default function DetailBar({
   }
 
   const uptimePercentBars = []
+  const incidents = state.incident[monitor.id] ?? []
 
   const currentTime = Math.round(Date.now() / 1000)
-  const montiorStartTime = state.incident[monitor.id][0].start[0]
+  const monitorStartTime = incidents[0]?.start[0] ?? currentTime
 
   const todayStart = new Date()
   todayStart.setHours(0, 0, 0, 0)
@@ -52,12 +53,12 @@ export default function DetailBar({
     const dayStart = Math.round(todayStart.getTime() / 1000) - i * 86400
     const dayEnd = dayStart + 86400
 
-    const dayMonitorTime = overlapLen(dayStart, dayEnd, montiorStartTime, currentTime)
+    const dayMonitorTime = overlapLen(dayStart, dayEnd, monitorStartTime, currentTime)
     let dayDownTime = 0
 
     let incidentReasons: { start: string; end: string; error: string }[] = []
 
-    for (let incident of state.incident[monitor.id]) {
+    for (let incident of incidents) {
       const incidentStart = incident.start[0]
       const incidentEnd = incident.end ?? currentTime
 

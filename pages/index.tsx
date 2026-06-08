@@ -25,11 +25,17 @@ export default function Home({
   statusPageLink?: string
 }) {
   const { t } = useTranslation('common')
+  const [monitorId, setMonitorId] = useState('')
   const [state, setState] = useState(() =>
     new CompactedMonitorStateWrapper(compactedStateStr).uncompact()
   )
 
   useEffect(() => {
+    setMonitorId(window.location.hash.substring(1))
+
+    const handleHashChange = () => setMonitorId(window.location.hash.substring(1))
+    window.addEventListener('hashchange', handleHashChange)
+
     // Polling for status updates every 180 seconds
     const interval = setInterval(async () => {
       try {
@@ -44,11 +50,13 @@ export default function Home({
       }
     }, 180 * 1000)
 
-    return () => clearInterval(interval)
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('hashchange', handleHashChange)
+    }
   }, [])
 
   // Specify monitorId in URL hash to view a specific monitor (can be used in iframe)
-  const monitorId = window.location.hash.substring(1)
   if (monitorId) {
     const monitor = monitors.find((monitor) => monitor.id === monitorId)
     if (!monitor || !state) {

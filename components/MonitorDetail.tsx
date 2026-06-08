@@ -15,7 +15,9 @@ export default function MonitorDetail({
 }) {
   const { t } = useTranslation('common')
 
-  if (!state.latency[monitor.id])
+  const incidents = state.incident[monitor.id] ?? []
+
+  if (!state.latency[monitor.id] || incidents.length === 0)
     return (
       <Card padding="lg" radius="md" withBorder>
         <Text fw={700} size="lg">
@@ -27,7 +29,7 @@ export default function MonitorDetail({
       </Card>
     )
 
-  const lastIncident = state.incident[monitor.id].slice(-1)[0]
+  const lastIncident = incidents.slice(-1)[0]
   const isUp = lastIncident.end !== null
 
   // Hide real status icon if monitor is in maintenance
@@ -46,9 +48,9 @@ export default function MonitorDetail({
     statusText = t('Maintenance')
   }
 
-  let totalTime = Date.now() / 1000 - state.incident[monitor.id][0].start[0]
+  let totalTime = Date.now() / 1000 - incidents[0].start[0]
   let downTime = 0
-  for (let incident of state.incident[monitor.id]) {
+  for (let incident of incidents) {
     downTime += (incident.end ?? Date.now() / 1000) - incident.start[0]
   }
 

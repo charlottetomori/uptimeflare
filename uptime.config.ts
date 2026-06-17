@@ -5,7 +5,7 @@ const pageConfig: PageConfig = {
   links: [
     { link: 'https://www.weizwz.com/', label: '主页' },
     { link: 'https://note.weizwz.com/', label: '博客' },
-    { link: 'https://github.com/weizwz', label: 'GitHub' },
+    { link: 'https://github.com/cy-2-u', label: 'GitHub' },
   ],
   logo: '/logo.png',
   group: {
@@ -30,10 +30,10 @@ const workerConfig: WorkerConfig = {
       id: 'cli-proxy-api',
       name: 'cli-proxy-api',
       method: 'GET',
-      target: 'https://cli-proxy-api-latest-gd1n.onrender.com/management.html#/',
-      statusPageLink: 'https://cli-proxy-api-latest-gd1n.onrender.com/management.html#/',
+      target: 'https://zhaocxx-xzhao.hf.space/management.html#',
+      statusPageLink: 'https://zhaocxx-xzhao.hf.space/management.html#',
       preview:
-        'https://image.thum.io/get/width/1200/https://cli-proxy-api-latest-gd1n.onrender.com/management.html',
+        'https://image.thum.io/get/width/1200/https://zhaocxx-xzhao.hf.space/management.html#',
       hideLatencyChart: false,
       expectedCodes: [200],
       timeout: 15000,

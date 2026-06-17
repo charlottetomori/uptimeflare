@@ -24,7 +24,7 @@ const workerConfig: WorkerConfig = {
       preview: 'https://image.thum.io/get/width/1200/https://grok2api-fwqw.onrender.com/',
       hideLatencyChart: false,
       expectedCodes: [200],
-      timeout: 15000,
+      timeout: 45000,
     },
     {
       id: 'cli-proxy-api',
@@ -36,7 +36,7 @@ const workerConfig: WorkerConfig = {
         'https://image.thum.io/get/width/1200/https://zhaocxx-xzhao.hf.space/management.html#',
       hideLatencyChart: false,
       expectedCodes: [200],
-      timeout: 15000,
+      timeout: 45000,
     },
     {
       id: 'qwenpaw_computer',
@@ -48,7 +48,7 @@ const workerConfig: WorkerConfig = {
         'https://image.thum.io/get/width/1200/https://modelscope.cn/studios/zhaoyangbxx/zhao',
       hideLatencyChart: false,
       expectedCodes: [200],
-      timeout: 15000,
+      timeout: 45000,
     },
     {
       id: 'subconverter',
@@ -60,7 +60,7 @@ const workerConfig: WorkerConfig = {
         'https://image.thum.io/get/width/1200/https://subconverter-nnie.onrender.com/',
       hideLatencyChart: false,
       expectedCodes: [200],
-      timeout: 15000,
+      timeout: 45000,
     },
   ],
   notification: {

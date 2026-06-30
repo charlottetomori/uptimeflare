@@ -19,8 +19,8 @@ export default function LoginPage() {
 
   useEffect(() => {
     fetch('/api/admin')
-      .then((res) => res.json())
-      .then((data: AdminStatus) => {
+      .then(async (res) => (await res.json()) as AdminStatus)
+      .then((data) => {
         setStatus(data)
         if (data.isAuthenticated) router.replace('/')
       })

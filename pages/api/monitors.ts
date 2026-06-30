@@ -40,7 +40,7 @@ function parseMonitor(input: unknown): MonitorTarget {
   const target = String(data.target ?? '').trim()
   const group = String(data.group ?? '核心服务').trim() || '核心服务'
   const preview = String(data.preview ?? '').trim()
-  const timeout = Number(data.timeout ?? 10000)
+  const timeout = Number(data.timeout ?? 4500)
 
   if (!name) throw new Error('请输入网站名称')
   if (name.length > 80) throw new Error('网站名称最多 80 个字符')

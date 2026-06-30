@@ -1,6 +1,8 @@
 import { MonitorTarget } from '../../types/config'
 import { withTimeout, fetchTimeout } from './util'
 
+const DEFAULT_MONITOR_TIMEOUT_MS = 4500
+
 async function httpResponseBasicCheck(
   monitor: MonitorTarget,
   code: number,
@@ -150,7 +152,7 @@ export async function getStatusWithGlobalPing(
     const pollStart = Date.now()
     let measurementResult: any
     while (true) {
-      if (Date.now() - pollStart > (monitor.timeout ?? 10000) + 2000) {
+      if (Date.now() - pollStart > (monitor.timeout ?? DEFAULT_MONITOR_TIMEOUT_MS) + 2000) {
         // 2s extra buffer
         throw 'api polling timeout'
       }
@@ -231,7 +233,9 @@ export async function getStatusWithGlobalPing(
     return {
       location: 'ERROR',
       status: {
-        ping: e.toString().toLowerCase().includes('timeout') ? monitor.timeout ?? 10000 : 0,
+        ping: e.toString().toLowerCase().includes('timeout')
+          ? monitor.timeout ?? DEFAULT_MONITOR_TIMEOUT_MS
+          : 0,
         up: false,
         err: 'Globalping error: ' + e.toString(),
       },
@@ -261,7 +265,7 @@ export async function getStatus(
       const socket = connect({ hostname: parsed.hostname, port: Number(parsed.port) })
 
       // Now we have an `opened` promise!
-      await withTimeout(monitor.timeout || 10000, socket.opened)
+      await withTimeout(monitor.timeout || DEFAULT_MONITOR_TIMEOUT_MS, socket.opened)
       await socket.close()
 
       console.log(`${monitor.name} connected to ${monitor.target}`)
@@ -272,7 +276,7 @@ export async function getStatus(
     } catch (e: Error | any) {
       console.log(`${monitor.name} errored with ${e.name}: ${e.message}`)
       if (e.message.includes('timed out')) {
-        status.ping = monitor.timeout || 10000
+        status.ping = monitor.timeout || DEFAULT_MONITOR_TIMEOUT_MS
       }
       status.up = false
       status.err = e.name + ': ' + e.message
@@ -285,16 +289,20 @@ export async function getStatus(
         headers.set('user-agent', 'ServiceStatus/1.0')
       }
 
-      const response = await fetchTimeout(monitor.target, monitor.timeout || 10000, {
-        method: monitor.method,
-        headers: headers,
-        body: monitor.body,
-        cf: {
-          cacheTtlByStatus: {
-            '100-599': -1, // Don't cache any status code, from https://developers.cloudflare.com/workers/runtime-apis/request/#requestinitcfproperties
+      const response = await fetchTimeout(
+        monitor.target,
+        monitor.timeout || DEFAULT_MONITOR_TIMEOUT_MS,
+        {
+          method: monitor.method,
+          headers: headers,
+          body: monitor.body,
+          cf: {
+            cacheTtlByStatus: {
+              '100-599': -1, // Don't cache any status code, from https://developers.cloudflare.com/workers/runtime-apis/request/#requestinitcfproperties
+            },
           },
-        },
-      })
+        }
+      )
 
       console.log(`${monitor.name} responded with ${response.status}`)
       status.ping = Date.now() - startTime
@@ -316,7 +324,7 @@ export async function getStatus(
     } catch (e: any) {
       console.log(`${monitor.name} errored with ${e.name}: ${e.message}`)
       if (e.name === 'AbortError') {
-        status.ping = monitor.timeout || 10000
+        status.ping = monitor.timeout || DEFAULT_MONITOR_TIMEOUT_MS
         status.up = false
         status.err = `Timeout after ${status.ping}ms`
       } else {

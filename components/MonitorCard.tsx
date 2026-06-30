@@ -1,9 +1,8 @@
-import { Tooltip, Drawer, Badge } from '@mantine/core'
+import { Tooltip, Drawer, Badge, Stack, Text } from '@mantine/core'
 import { IconCloud, IconAlertTriangle, IconCalendar, IconClock } from '@tabler/icons-react'
 import { MonitorTarget, MonitorState } from '@/types/config'
 import { useTranslation } from 'react-i18next'
 import Image from 'next/image'
-import { Stack, Text } from '@mantine/core'
 import { useState } from 'react'
 import { maintenances } from '@/uptime.config'
 
@@ -62,7 +61,7 @@ export default function MonitorCard({
   // Calculate uptime bars (last 30 days)
   const uptimeBars = []
   const currentTime = Math.round(Date.now() / 1000)
-  const montiorStartTime = state.incident[monitor.id]
+  const monitorStartTime = state.incident[monitor.id]
     ? state.incident[monitor.id][0].start[0]
     : currentTime
   const todayStart = new Date()
@@ -93,7 +92,7 @@ export default function MonitorCard({
   for (let i = 29; i >= 0; i--) {
     const dayStart = Math.round(todayStart.getTime() / 1000) - i * 86400
     const dayEnd = dayStart + 86400
-    const dayMonitorTime = overlapLen(dayStart, dayEnd, montiorStartTime, currentTime)
+    const dayMonitorTime = overlapLen(dayStart, dayEnd, monitorStartTime, currentTime)
     let dayDownTime = 0
 
     let incidentReasons: { start: string; end: string; error: string }[] = []

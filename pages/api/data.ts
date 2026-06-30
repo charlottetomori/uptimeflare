@@ -35,7 +35,7 @@ export default async function handler(req: NextRequest): Promise<Response> {
 
   const workerConfig = await getEffectiveWorkerConfig(env)
 
-  for (let monitor of workerConfig.monitors) {
+  for (const monitor of workerConfig.monitors) {
     if (compactedState.incidentLen(monitor.id) === 0 || compactedState.latencyLen(monitor.id) === 0) {
       monitors[monitor.id] = {
         up: null,
@@ -61,7 +61,7 @@ export default async function handler(req: NextRequest): Promise<Response> {
     }
   }
 
-  let ret = {
+  const ret = {
     up: compactedState.data.overallUp,
     down: compactedState.data.overallDown,
     updatedAt: compactedState.data.lastUpdate,

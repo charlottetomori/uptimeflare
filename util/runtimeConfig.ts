@@ -53,12 +53,6 @@ export async function setRuntimeValue(env: RuntimeEnv, key: string, value: strin
     .run()
 }
 
-export function getWorkerConfig(env?: RuntimeEnv): WorkerConfig {
-  return {
-    ...workerConfig,
-  }
-}
-
 export async function getStoredMonitors(env?: RuntimeEnv): Promise<MonitorTarget[]> {
   const value = await getRuntimeValue(env, STORED_MONITORS_KEY)
   if (!value) return []
@@ -77,11 +71,10 @@ export async function setStoredMonitors(env: RuntimeEnv, monitors: MonitorTarget
 }
 
 export async function getEffectiveWorkerConfig(env?: RuntimeEnv): Promise<WorkerConfig> {
-  const config = getWorkerConfig(env)
   const storedMonitors = await getStoredMonitors(env)
 
   return {
-    ...config,
-    monitors: [...config.monitors, ...storedMonitors],
+    ...workerConfig,
+    monitors: workerConfig.monitors.concat(storedMonitors),
   }
 }

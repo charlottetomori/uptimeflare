@@ -1,12 +1,9 @@
 import { NextRequest } from 'next/server'
 import { MonitorTarget } from '@/types/config'
-import {
-  getWorkerConfig,
-  getStoredMonitors,
-  setStoredMonitors,
-} from '@/util/runtimeConfig'
+import { getStoredMonitors, setStoredMonitors } from '@/util/runtimeConfig'
 import type { RuntimeEnv } from '@/util/runtimeConfig'
 import { isAdminRequest } from '@/util/auth'
+import { workerConfig } from '@/uptime.config'
 
 export const runtime = 'edge'
 
@@ -96,18 +93,17 @@ export default async function handler(req: NextRequest): Promise<Response> {
 
   if (req.method === 'GET') {
     const stored = await getStoredMonitors(env)
-    const config = getWorkerConfig(env)
-    return json({ monitors: [...config.monitors, ...stored], stored })
+    return json({ monitors: workerConfig.monitors.concat(stored), stored })
   }
 
   if (req.method === 'POST') {
     try {
       const monitor = parseMonitor(await req.json())
-      const configuredIds = new Set(getWorkerConfig(env).monitors.map((monitor) => monitor.id))
+      const configuredIds = new Set(workerConfig.monitors.map((monitor) => monitor.id))
       const storedMonitors = await getStoredMonitors(env)
-      const existingIds = new Set([...configuredIds, ...storedMonitors.map((monitor) => monitor.id)])
+      const existingIds = new Set(storedMonitors.map((monitor) => monitor.id))
 
-      if (existingIds.has(monitor.id)) {
+      if (configuredIds.has(monitor.id) || existingIds.has(monitor.id)) {
         return json({ error: '监测 ID 已存在，请换一个名称或 ID' }, 409)
       }
 

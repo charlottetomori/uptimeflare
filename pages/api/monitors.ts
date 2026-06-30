@@ -106,7 +106,9 @@ export default async function handler(req: NextRequest): Promise<Response> {
 
   if (req.method === 'DELETE') {
     try {
-      const id = String((await req.json())?.id ?? '').trim()
+      const body = await req.json()
+      const data = body && typeof body === 'object' ? (body as Record<string, unknown>) : {}
+      const id = String(data.id ?? '').trim()
       if (!id) return json({ error: '缺少监测 ID' }, 400)
 
       const storedMonitors = await getStoredMonitors(env)

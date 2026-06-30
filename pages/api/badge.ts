@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { CompactedMonitorStateWrapper, getFromStore } from '@/worker/src/store'
+import type { RuntimeEnv } from '@/util/runtimeConfig'
 
 export const runtime = 'edge'
 
@@ -31,7 +32,7 @@ export default async function handler(req: NextRequest): Promise<Response> {
     const url = new URL(req.url)
 
     const monitorId = url.searchParams.get('id')
-    const label = url.searchParams.get('label') ?? monitorId ?? 'UptimeFlare'
+    const label = url.searchParams.get('label') ?? monitorId ?? 'status'
 
     const upMsg = url.searchParams.get('up') ?? 'UP'
     const downMsg = url.searchParams.get('down') ?? 'DOWN'
@@ -45,9 +46,8 @@ export default async function handler(req: NextRequest): Promise<Response> {
       })
     }
 
-    const compactedState = new CompactedMonitorStateWrapper(
-      await getFromStore(process.env as any, 'state')
-    )
+    const env = process.env as unknown as RuntimeEnv
+    const compactedState = new CompactedMonitorStateWrapper(await getFromStore(env as Env, 'state'))
 
     const lastIncident = compactedState.getIncident(
       monitorId,

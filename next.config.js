@@ -1,12 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    allowedHosts: ['.monkeycode-ai.online'],
+  },
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'p.weizwz.com',
-      },
       {
         protocol: 'https',
         hostname: 'image.thum.io',
@@ -24,6 +23,10 @@ if (process.env.NODE_ENV === 'development') {
       UPTIMEFLARE_D1: {
         type: 'd1',
         id: 'UPTIMEFLARE_D1',
+      },
+      UPTIMEFLARE_CONFIG: {
+        type: 'kv',
+        id: 'UPTIMEFLARE_CONFIG',
       },
     },
   })

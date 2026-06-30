@@ -282,7 +282,7 @@ export async function getStatus(
     try {
       let headers = new Headers(monitor.headers as any)
       if (!headers.has('user-agent')) {
-        headers.set('user-agent', 'UptimeFlare/1.0 (+https://github.com/lyc8503/UptimeFlare)')
+        headers.set('user-agent', 'ServiceStatus/1.0')
       }
 
       const response = await fetchTimeout(monitor.target, monitor.timeout || 10000, {

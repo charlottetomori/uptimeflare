@@ -1,6 +1,7 @@
-import { maintenances, workerConfig } from '@/uptime.config'
+import { maintenances } from '@/uptime.config'
 import { NextRequest } from 'next/server'
 import { CompactedMonitorStateWrapper, getFromStore } from '@/worker/src/store'
+import { getEffectiveWorkerConfig, RuntimeEnv } from '@/util/runtimeConfig'
 
 export const runtime = 'edge'
 
@@ -12,9 +13,8 @@ const headers = {
 }
 
 export default async function handler(req: NextRequest): Promise<Response> {
-  const compactedState = new CompactedMonitorStateWrapper(
-    await getFromStore(process.env as any, 'state')
-  )
+  const env = process.env as unknown as RuntimeEnv
+  const compactedState = new CompactedMonitorStateWrapper(await getFromStore(env as Env, 'state'))
 
   if (compactedState.data.lastUpdate === 0) {
     return new Response(JSON.stringify({ error: 'No data available' }), {
@@ -23,9 +23,29 @@ export default async function handler(req: NextRequest): Promise<Response> {
     })
   }
 
-  let monitors: any = {}
+  const monitors: Record<
+    string,
+    {
+      up: boolean | null
+      latency: number | null
+      location: string | null
+      message: string
+    }
+  > = {}
+
+  const workerConfig = await getEffectiveWorkerConfig(env)
 
   for (let monitor of workerConfig.monitors) {
+    if (compactedState.incidentLen(monitor.id) === 0 || compactedState.latencyLen(monitor.id) === 0) {
+      monitors[monitor.id] = {
+        up: null,
+        latency: null,
+        location: null,
+        message: 'Pending first check',
+      }
+      continue
+    }
+
     const lastIncident = compactedState.getIncident(
       monitor.id,
       compactedState.incidentLen(monitor.id) - 1

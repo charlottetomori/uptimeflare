@@ -3,17 +3,21 @@ import Head from 'next/head'
 import { Inter } from 'next/font/google'
 import { useEffect, useState } from 'react'
 import { MonitorTarget } from '@/types/config'
-import { maintenances, pageConfig, workerConfig } from '@/uptime.config'
+import { maintenances, pageConfig } from '@/uptime.config'
 import OverallStatus from '@/components/OverallStatus'
 import MonitorList from '@/components/MonitorList'
-import { Center, Container, Text } from '@mantine/core'
+import { Text } from '@mantine/core'
 import MonitorDetail from '@/components/MonitorDetail'
 import Footer from '@/components/Footer'
 import { useTranslation } from 'react-i18next'
 import { CompactedMonitorStateWrapper, getFromStore } from '@/worker/src/store'
+import { getEffectiveWorkerConfig } from '@/util/runtimeConfig'
+import type { RuntimeEnv } from '@/util/runtimeConfig'
+import MonitorManager from '@/components/MonitorManager'
 
 export const runtime = 'experimental-edge'
 const inter = Inter({ subsets: ['latin'] })
+const STATUS_REFRESH_INTERVAL_MS = 10 * 60 * 1000
 
 export default function Home({
   compactedStateStr,
@@ -36,7 +40,7 @@ export default function Home({
     const handleHashChange = () => setMonitorId(window.location.hash.substring(1))
     window.addEventListener('hashchange', handleHashChange)
 
-    // Polling for status updates every 180 seconds
+    // Poll status updates every 10 minutes to match the Worker cron schedule.
     const interval = setInterval(async () => {
       try {
         const res = await fetch('/api/status')
@@ -48,7 +52,7 @@ export default function Home({
       } catch (error) {
         console.error('Failed to update status:', error)
       }
-    }, 180 * 1000)
+    }, STATUS_REFRESH_INTERVAL_MS)
 
     return () => {
       clearInterval(interval)
@@ -76,16 +80,42 @@ export default function Home({
         <link rel="icon" href={pageConfig.favicon ?? '/favicon.ico'} type="image/x-icon" />
       </Head>
 
-      <main className={`${inter.className} min-h-screen bg-gray-50`}>
-        <div className="max-w-7xl mx-auto px-4">
-          {state.lastUpdate === 0 ? (
-            <Center>
-              <Text fw={700}>{t('Monitor State not defined')}</Text>
-            </Center>
+      <main className={`${inter.className} status-shell min-h-screen text-slate-950`}>
+        <div className="ambient-orb pointer-events-none absolute right-[-6rem] top-20 h-72 w-72 rounded-full bg-blue-200/30 blur-3xl" />
+        <div className="ambient-orb pointer-events-none absolute left-[-8rem] top-[28rem] h-80 w-80 rounded-full bg-emerald-200/25 blur-3xl" />
+        <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+          {monitors.length === 0 ? (
+            <div className="py-12 sm:py-16">
+              <div className="max-w-2xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.32em] text-slate-500">
+                  Status Board
+                </p>
+                <h1 className="mt-5 text-5xl font-semibold tracking-[-0.065em] text-slate-950 sm:text-7xl">
+                  尚未添加监测站点
+                </h1>
+                <p className="mt-6 max-w-xl text-base leading-7 text-slate-600">
+                  从下方管理区添加网站后，系统会按 10 分钟周期检测，并生成可用率、延迟和故障历史。
+                </p>
+              </div>
+              <MonitorManager />
+            </div>
+          ) : state.lastUpdate === 0 ? (
+            <div className="py-12 sm:py-16">
+              <div className="max-w-2xl">
+                <Text fw={800} size="xl" c="dark.8">
+                  {t('Monitor State not defined')}
+                </Text>
+                <Text mt="sm" size="md" c="dimmed">
+                  监测数据会在 Worker 首次执行后显示，当前默认每 10 分钟自动检查一次。
+                </Text>
+              </div>
+              <MonitorManager />
+            </div>
           ) : (
             <>
               <OverallStatus state={state} monitors={monitors} maintenances={maintenances} />
               <MonitorList monitors={monitors} state={state} />
+              <MonitorManager />
             </>
           )}
         </div>
@@ -97,26 +127,21 @@ export default function Home({
 }
 
 export async function getServerSideProps() {
+  const env = process.env as unknown as RuntimeEnv
   // Read state as string from storage, to avoid hitting server-side cpu time limit
-  const compactedStateStr = await getFromStore(process.env as any, 'state')
+  const compactedStateStr = await getFromStore(env as Env, 'state')
 
   // Only present these values to client
-  const monitors = workerConfig.monitors.map((monitor) => {
+  const monitors = (await getEffectiveWorkerConfig(env)).monitors.map((monitor) => {
     return {
       id: monitor.id,
       name: monitor.name,
-      // @ts-ignore
-      tooltip: monitor?.tooltip ?? null,
-      // @ts-ignore
-      statusPageLink: monitor?.statusPageLink ?? null,
-      // @ts-ignore
-      hideLatencyChart: monitor?.hideLatencyChart ?? null,
-      // @ts-ignore
-      preview: monitor?.preview ?? null,
-      // @ts-ignore
-      target: monitor?.target ?? null,
-      // @ts-ignore
-      group: monitor?.group ?? null,
+      method: monitor.method,
+      target: monitor.target,
+      tooltip: monitor.tooltip,
+      statusPageLink: monitor.statusPageLink,
+      hideLatencyChart: monitor.hideLatencyChart,
+      preview: monitor.preview,
     }
   })
 

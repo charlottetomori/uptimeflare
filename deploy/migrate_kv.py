@@ -1,6 +1,6 @@
 # This is a script to migrate state from KV to D1 database.
 # It reads the state from KV namespace, compacts it, and writes it to D1 database.
-# It also deletes the KV namespace after a successful migration.
+# It keeps the old KV namespace after a successful migration.
 import requests
 import os
 import json
@@ -84,15 +84,7 @@ if not r['success']:
         print("State probably already migrated to D1. Migration skipped.")
     else:
         print("Error writing state to D1: ", r)
-        print("Migration failed. Please report this issue at https://github.com/lyc8503/UptimeFlare/issues.")
+        print("Migration failed. Please inspect the Cloudflare API response and workflow permissions.")
         exit(1)
 
-print("State migrated to D1 successfully. Trying to delete unused KV namespace...")
-r = requests.delete(
-    api_endpoint + f"/storage/kv/namespaces/{kv_id}",
-    headers=headers
-).json()
-if r['success']:
-    print("KV namespace deleted successfully.")
-else:
-    print("Error deleting KV namespace: ", r)
+print("State migrated to D1 successfully. Old KV namespace is preserved.")

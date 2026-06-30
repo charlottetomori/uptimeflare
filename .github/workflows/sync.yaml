@@ -1,4 +1,4 @@
-name: Upstream Sync
+name: Upstream Sync Disabled
 
 permissions:
   contents: write
@@ -18,40 +18,11 @@ on:
 
 jobs:
   sync_latest_from_upstream:
-    name: Sync latest commits from upstream repo
+    name: Upstream sync is disabled for this fork
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout target repo
-        uses: actions/checkout@v3
-        with:
-          token: ${{ inputs.override-token || secrets.GITHUB_TOKEN }}
-
-      - name: Current config
+      - name: Explain disabled workflow
         run: |
-          cat uptime.config.ts
-          cp uptime.config.ts /tmp/origin.config.ts
-
-      - name: Sync upstream changes
-        id: sync
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          # Fetch latest code
-          git clone https://github.com/lyc8503/UptimeFlare /tmp/latest
-          rm -rf /tmp/latest/.git
-
-          # Clean current repo and update
-          git rm -rf '*'
-          cp -r /tmp/latest/. .
-          cp /tmp/origin.config.ts uptime.config.ts
-          git add .
-          git commit -m "Sync latest code from upstream"
-          git push
-
-      - name: Trigger deployment
-        if: ${{ inputs.override-token == '' }}
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          workflow: deploy.yml
+          echo "Upstream sync is disabled because this repository now contains local customizations."
+          echo "Apply upstream changes manually and review the diff before deployment."

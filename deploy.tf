@@ -29,6 +29,11 @@ resource "cloudflare_d1_database" "uptimeflare_d1" {
   }
 }
 
+resource "cloudflare_workers_kv_namespace" "uptimeflare_config" {
+  account_id = var.CLOUDFLARE_ACCOUNT_ID
+  title      = "uptimeflare_config"
+}
+
 resource "cloudflare_workers_script" "uptimeflare_worker" {
   account_id          = var.CLOUDFLARE_ACCOUNT_ID
   script_name         = "uptimeflare_worker"
@@ -59,6 +64,10 @@ resource "cloudflare_workers_script" "uptimeflare_worker" {
     name = "UPTIMEFLARE_D1"
     type = "d1"
     id   = cloudflare_d1_database.uptimeflare_d1.id
+    }, {
+    name         = "UPTIMEFLARE_CONFIG"
+    type         = "kv_namespace"
+    namespace_id = cloudflare_workers_kv_namespace.uptimeflare_config.id
   }]
 }
 
@@ -66,7 +75,7 @@ resource "cloudflare_workers_cron_trigger" "uptimeflare_worker_cron" {
   account_id  = var.CLOUDFLARE_ACCOUNT_ID
   script_name = cloudflare_workers_script.uptimeflare_worker.script_name
   schedules = [{
-    cron = "* * * * *" # every 1 minute, you can reduce the write counts by increase the worker settings of `kvWriteCooldownMinutes`
+    cron = "*/10 * * * *"
   }]
 }
 
@@ -84,6 +93,11 @@ resource "cloudflare_pages_project" "uptimeflare" {
       d1_databases = {
         UPTIMEFLARE_D1 = {
           id = cloudflare_d1_database.uptimeflare_d1.id
+        }
+      }
+      kv_namespaces = {
+        UPTIMEFLARE_CONFIG = {
+          namespace_id = cloudflare_workers_kv_namespace.uptimeflare_config.id
         }
       }
       compatibility_date  = "2025-04-02"

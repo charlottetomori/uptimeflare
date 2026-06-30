@@ -4,37 +4,25 @@ export default function Footer() {
   const links = pageConfig.links || []
 
   return (
-    <footer className="py-6 mt-16 text-center text-slate-500 text-sm">
-      <div className="max-w-7xl mx-auto px-4">
-        {/* Credits */}
-        <div className="font-bold flex flex-col justify-center items-center gap-2 text-xs opacity-80">
-          <p>
-            &copy; {new Date().getFullYear()}{' '}
-            <span className="font-medium">
-              Services Status by &nbsp;
-              <a
-                href="https://github.com/weizwz"
-                target="_blank"
-                className="font-bold hover:text-emerald-500 transition-colors"
-              >
-                weizwz
-              </a>
-            </span>
-          </p>
-          <div className="flex items-center gap-1">
-            <span className="font-medium">本站使用</span>
+    <footer className="mt-14 border-t border-stone-200 py-8 text-sm text-stone-500">
+      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 sm:flex-row sm:items-center sm:justify-between">
+        <p>&copy; {new Date().getFullYear()} {pageConfig.title || '服务状态'}</p>
+        <div className="flex flex-wrap items-center gap-4">
+          {links.map((link) => (
             <a
-              href="https://github.com/weizwz/UptimeFlare"
+              key={link.link}
+              href={link.link}
               target="_blank"
-              className="hover:text-emerald-500 transition-colors"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-stone-950"
             >
-              UptimeFlare
+              {link.label}
             </a>
-          </div>
+          ))}
           {pageConfig.customFooter && (
             <div
               dangerouslySetInnerHTML={{ __html: pageConfig.customFooter }}
-              className="mt-2 text-xs opacity-70"
+              className="text-xs opacity-70"
             />
           )}
         </div>

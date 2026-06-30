@@ -1,12 +1,13 @@
 import { DurableObject } from 'cloudflare:workers'
 import { MonitorTarget } from '../../types/config'
-import { workerConfig } from '../../uptime.config'
 import { getStatus, getStatusWithGlobalPing } from './monitor'
 import { formatAndNotify, getWorkerLocation } from './util'
 import { CompactedMonitorStateWrapper, getFromStore, setToStore } from './store'
+import { getEffectiveWorkerConfig } from '../../util/runtimeConfig'
 
 export interface Env {
   UPTIMEFLARE_STATE: KVNamespace
+  UPTIMEFLARE_CONFIG: KVNamespace
   REMOTE_CHECKER_DO: DurableObjectNamespace<RemoteChecker>
   UPTIMEFLARE_D1: D1Database
   [key: string]: any
@@ -15,6 +16,7 @@ export interface Env {
 const Worker = {
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
     const workerLocation = (await getWorkerLocation()) || 'ERROR'
+    const workerConfig = await getEffectiveWorkerConfig(env)
     console.log(`Running scheduled event on ${workerLocation}...`)
 
     // Create a wrapped MonitorState from stored compacted state

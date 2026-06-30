@@ -6,6 +6,15 @@ import {
   MonitorStateCompacted,
 } from '../../types/config'
 
+const STORE_TABLE = 'uptimeflare'
+
+async function ensureStore(env: Env): Promise<void> {
+  if (!env.UPTIMEFLARE_D1) return
+  await env.UPTIMEFLARE_D1.exec(
+    `CREATE TABLE IF NOT EXISTS ${STORE_TABLE} (key VARCHAR(255) PRIMARY KEY, value BLOB NOT NULL);`
+  )
+}
+
 function hexToBytes(hex: string): Uint8Array {
   const bytes = new Uint8Array(hex.length / 2)
   for (let i = 0; i < bytes.length; i++) {
@@ -16,14 +25,20 @@ function hexToBytes(hex: string): Uint8Array {
 
 export async function getFromStore(env: Env, key: string): Promise<string | null> {
   if (!env.UPTIMEFLARE_D1) return null
-  const stmt = env.UPTIMEFLARE_D1.prepare('SELECT value FROM uptimeflare WHERE key = ?')
-  const result = await stmt.bind(key).first<{ value: string }>()
-  return result?.value || null
+  try {
+    const stmt = env.UPTIMEFLARE_D1.prepare(`SELECT value FROM ${STORE_TABLE} WHERE key = ?`)
+    const result = await stmt.bind(key).first<{ value: string }>()
+    return result?.value || null
+  } catch (error) {
+    console.error('Failed to read D1 state:', error)
+    return null
+  }
 }
 
 export async function setToStore(env: Env, key: string, value: string): Promise<void> {
+  await ensureStore(env)
   const stmt = env.UPTIMEFLARE_D1.prepare(
-    'INSERT INTO uptimeflare (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value;'
+    `INSERT INTO ${STORE_TABLE} (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value;`
   )
   await stmt.bind(key, value).run()
 }
@@ -69,7 +84,7 @@ export class CompactedMonitorStateWrapper {
         incidents.start.length !== incidents.error.length
       ) {
         throw new Error(
-          'Inconsistent incident data lengths, please report an issue at https://github.com/lyc8503/UptimeFlare'
+          'Inconsistent incident data lengths.'
         )
       }
 
@@ -97,7 +112,7 @@ export class CompactedMonitorStateWrapper {
 
       if (timeArr.length !== pingArr.length || timeArr.length !== locUncompacted.length) {
         throw new Error(
-          'Inconsistent latency data lengths, please report an issue at https://github.com/lyc8503/UptimeFlare.'
+          'Inconsistent latency data lengths.'
         )
       }
 

@@ -22,6 +22,15 @@ export default function MonitorCard({
   >([])
   const [drawerDowntime, setDrawerDowntime] = useState('')
 
+  const targetLabel = (() => {
+    if (!monitor.target) return ''
+    try {
+      return new URL(monitor.target).hostname
+    } catch {
+      return monitor.target.split('/')[0]
+    }
+  })()
+
   const incident = state.incident[monitor.id]
 
   // Check if monitor is in maintenance
@@ -30,9 +39,13 @@ export default function MonitorCard({
     .filter((m) => now >= new Date(m.start) && (!m.end || now <= new Date(m.end)))
     .find((maintenance) => maintenance.monitors?.includes(monitor.id))
 
-  // Determine status: maintenance > down > up
+  const hasCheckData = Boolean(incident && incident.length > 0)
+
+  // Determine status: maintenance > pending > down > up
   const status = hasMaintenance
     ? 'maintenance'
+    : !hasCheckData
+    ? 'pending'
     : incident && incident.length > 0 && incident[incident.length - 1].end === null
     ? 'down'
     : 'up'
@@ -249,94 +262,105 @@ export default function MonitorCard({
           ))}
         </Stack>
       </Drawer>
-      <div className="group relative p-5 flex flex-col gap-4 bg-white dark:bg-zinc-900 rounded-3xl shadow-md shadow-slate-200 hover:shadow-xl hover:shadow-slate-200/50 dark:shadow-none dark:hover:shadow-none transition-all duration-300 border border-slate-200 dark:border-zinc-800 overflow-hidden">
+      <div className="group relative flex flex-col gap-5 overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-white/80 p-4 shadow-[0_18px_55px_rgba(15,23,42,0.08)] backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_24px_70px_rgba(15,23,42,0.12)]">
         {/* Preview Image Area */}
-        <div className="w-full aspect-video max-h-32 bg-white dark:bg-zinc-800 overflow-hidden">
-          <div className="relative w-full h-full overflow-hidden rounded-lg dark:bg-zinc-800">
+        <div className="aspect-video w-full overflow-hidden rounded-[1.25rem] bg-slate-100">
+          <div className="relative h-full w-full overflow-hidden">
             {monitor.preview ? (
-              <a
-                href={monitor.statusPageLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block w-full h-full"
-              >
+              <a href={monitor.statusPageLink} target="_blank" rel="noopener noreferrer" className="block h-full w-full">
                 <Image
                   src={monitor.preview}
                   alt={monitor.name}
                   fill
-                  className="w-full h-full object-cover object-top origin-top transition-transform duration-700 group-hover:scale-150"
+                  className="h-full w-full origin-top object-cover object-top transition-transform duration-700 group-hover:scale-105"
                 />
               </a>
             ) : (
-              <div className="flex items-center justify-center w-full h-full text-slate-200 dark:text-zinc-700">
-                <IconCloud size={64} stroke={1} className="mt-6" />
+              <div className="flex h-full w-full items-center justify-center text-slate-300">
+                <IconCloud size={56} stroke={1.2} />
               </div>
             )}
           </div>
 
           {/* Status Badge - Overlay on Image */}
-          <div className="absolute top-3 right-3">
+          <div className="absolute right-3 top-3">
             <div
               className={`
-              flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold tracking-wide uppercase backdrop-blur-md shadow-sm border border-white/10
+              flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] shadow-sm
               ${
                 status === 'maintenance'
-                  ? 'bg-yellow-500/90 text-white'
+                  ? 'border-amber-200 bg-amber-50 text-amber-700'
                   : status === 'up'
-                  ? 'bg-emerald-500/90 text-white'
-                  : 'bg-red-500/90 text-white'
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                  : status === 'pending'
+                  ? 'border-slate-200 bg-slate-50 text-slate-600'
+                  : 'border-rose-200 bg-rose-50 text-rose-700'
               }
             `}
             >
-              <div className={`w-2 h-2 rounded-full bg-white animate-pulse`} />
+              <div
+                className={`h-2 w-2 rounded-full ${
+                  status === 'maintenance'
+                    ? 'bg-amber-500'
+                    : status === 'up'
+                    ? 'bg-emerald-500'
+                    : status === 'pending'
+                    ? 'bg-slate-400'
+                    : 'bg-rose-500'
+                }`}
+              />
               {status === 'maintenance'
                 ? t('Maintenance')
                 : status === 'up'
                 ? t('Operational')
+                : status === 'pending'
+                ? 'Pending'
                 : t('Down')}
             </div>
           </div>
 
           {/* Header Info - Overlay on Image (Top Left) */}
-          <div className="absolute top-3 left-3 max-w-[calc(100%-140px)] px-2 py-1 bg-white/50 backdrop-blur-[1px] rounded-br-2xl overflow-hidden">
+          <div className="absolute left-3 top-3 max-w-[calc(100%-150px)] overflow-hidden rounded-2xl border border-white/70 bg-white/90 px-3 py-2 shadow-sm backdrop-blur">
             {monitor.statusPageLink ? (
               <>
-                <h3 className="w-fit font-bold text-sm leading-tight">{monitor.name}</h3>
-                {monitor.target && (
-                  <div className="text-[10px] font-mono text-gray-700">
-                    {new URL(monitor.target).hostname}
-                  </div>
+                <h3 className="w-fit text-sm font-semibold leading-tight text-slate-950">{monitor.name}</h3>
+                {targetLabel && (
+                  <div className="mt-0.5 text-[10px] font-mono text-slate-500">{targetLabel}</div>
                 )}
               </>
             ) : (
-              <h3 className="w-fit font-bold text-sm leading-tight">{monitor.name}</h3>
+              <h3 className="w-fit text-sm font-semibold leading-tight text-slate-950">{monitor.name}</h3>
             )}
           </div>
         </div>
         {/* Uptime Bars */}
         <div className="flex flex-col gap-2">
-          <div className="flex justify-between text-xs font-medium text-slate-400">
+          <div className="flex justify-between text-xs font-medium text-slate-500">
             <span>30d check</span>
             <span>{totalPercent}% uptime</span>
           </div>
-          <div className="flex items-end justify-between gap-[3px] h-6 opacity-80">
+          <div className="flex h-6 items-end justify-between gap-[3px]">
             {uptimeBars}
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex justify-between items-center text-xs text-slate-400 font-medium mt-auto pt-4 border-t border-slate-100 dark:border-zinc-800/50">
+        <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4 text-xs font-medium text-slate-500">
           <div className="flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span>{t('check_label', { defaultValue: 'Checked' })}</span>
-            <span className="text-slate-500">{timeInfo} ago</span>
+            <div
+              className={`h-1.5 w-1.5 rounded-full ${
+                status === 'pending' ? 'bg-slate-400' : 'bg-emerald-500'
+              }`}
+            />
+            <span>{status === 'pending' ? 'Waiting for check' : t('check_label', { defaultValue: 'Checked' })}</span>
+            {status !== 'pending' && <span className="text-slate-400">{timeInfo} ago</span>}
           </div>
-          <div className="flex items-center gap-1 bg-slate-50 dark:bg-zinc-800 px-2 py-1 rounded-md">
+          <div className="flex items-center gap-1 rounded-xl bg-slate-100 px-2 py-1">
             <span
               className={`font-bold font-mono ${
                 lastLatency && lastLatency > 500
-                  ? 'text-amber-500'
-                  : 'text-slate-600 dark:text-slate-400'
+                  ? 'text-amber-600'
+                  : 'text-slate-700'
               }`}
             >
               {lastLatency ? `${lastLatency}ms` : '-'}

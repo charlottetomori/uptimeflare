@@ -1,5 +1,6 @@
 import { getFromStore } from '@/worker/src/store'
 import type { NextRequest } from 'next/server'
+import type { RuntimeEnv } from '@/util/runtimeConfig'
 
 export const runtime = 'edge'
 
@@ -11,10 +12,8 @@ export default async function handler(req: NextRequest) {
   let isAllowed = (_url: string | null) => false
 
   if (host) {
-    // Dynamically determine the root domain to allow
-    // e.g. status.weizwz.com -> weizwz.com
-    // e.g. weizwz.com -> weizwz.com
-    // e.g. localhost:3000 -> localhost
+    // Dynamically determine the root domain to allow.
+    // Examples: status.example.com -> example.com, localhost:3000 -> localhost.
     const parts = host.split(':')[0].split('.') // Remove port if present
     let rootDomain = host.split(':')[0]
     if (parts.length > 2 && !/^\d+\.\d+\.\d+\.\d+$/.test(rootDomain)) {
@@ -57,7 +56,8 @@ export default async function handler(req: NextRequest) {
     return new Response('Forbidden: Referer not allowed', { status: 403 })
   }
   try {
-    const compactedStateStr = await getFromStore(process.env as any, 'state')
+    const env = process.env as unknown as RuntimeEnv
+    const compactedStateStr = await getFromStore(env as Env, 'state')
     return new Response(JSON.stringify({ compactedStateStr }), {
       status: 200,
       headers: {
@@ -65,8 +65,9 @@ export default async function handler(req: NextRequest) {
         'cache-control': 'public, s-maxage=10, stale-while-revalidate=59',
       },
     })
-  } catch (e: any) {
-    return new Response(JSON.stringify({ error: e.message }), {
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : 'Failed to read status'
+    return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { 'content-type': 'application/json' },
     })

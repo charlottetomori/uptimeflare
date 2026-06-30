@@ -49,21 +49,30 @@ export default function MonitorList({
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {sortedGroups.map((group) => {
         const GroupIcon = getGroupIcon(group)
         return (
           <div key={group}>
             {group !== 'Ungrouped' && (
-              <div className="text-center mb-8">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <GroupIcon className="text-emerald-500 opacity-80" size={24} />
-                  <h2 className="text-2xl font-bold text-slate-800 dark:text-zinc-100">{group}</h2>
+              <div className="mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-700">
+                    <GroupIcon size={20} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
+                      Group
+                    </p>
+                    <h2 className="text-2xl font-semibold tracking-[-0.035em] text-stone-950">
+                      {group}
+                    </h2>
+                  </div>
                 </div>
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
               {groupedMonitors[group].map((monitor) => (
                 <MonitorCard key={monitor.id} monitor={monitor} state={state} />
               ))}

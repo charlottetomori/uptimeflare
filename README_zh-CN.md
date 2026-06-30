@@ -1,61 +1,54 @@
-<div align="right">
-  <a title="English" href="README.md"><img src="https://img.shields.io/badge/-English-545759?style=for-the-badge" alt="English"></a>
-  <a title="简体中文" href="README_zh-CN.md"><img src="https://img.shields.io/badge/-%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-A31F34?style=for-the-badge" alt="简体中文"></a>
-</div>
+# 服务状态页
 
-# ✔[UptimeFlare](https://github.com/weizwz/UptimeFlare)
+一个基于 Next.js 和 Cloudflare Workers 的浅色服务状态页。
 
-一个由 Cloudflare Workers 驱动的功能丰富、Serverless 且免费的 Uptime 监控及状态页面。
+## 功能
 
-fork 于 https://github.com/lyc8503/UptimeFlare，进行了界面美化
+- 通过 Cloudflare Workers 监测 HTTP、HTTPS 和 TCP 服务
+- 默认每 10 分钟自动检查一次，降低 D1 免费版写入压力
+- 展示近 30 天可用率、响应延迟和故障详情
+- 支持可选 Webhook 通知
+- 固定浅色响应式界面
+- 提供 JSON 状态接口和 badge 接口
 
-## ⭐功能
+## 配置
 
-- 开源，易于部署（全程无需本地工具，耗时不到 10 分钟），且完全免费
-- 监控功能
-  - 最多支持 50 个 1 分钟精度的检查
-  - 支持指定全球 [310+ 个城市](https://www.cloudflare.com/network/) 的监控节点
-  - 支持 HTTP/HTTPS/TCP 端口监控
-  - 最多 90 天的 uptime 历史记录和 uptime 百分比跟踪
-  - 可自定义的 HTTP(s) 请求方法、头和主体
-  - 可自定义的 HTTP(s) 状态码和关键字检查
-  - 支持 [100 多个通知渠道](https://github.com/caronc/apprise/wiki) 的宕机消息通知
-  - 可自定义的 Webhook
-  - 多语言支持 (中文/英文)
-- 状态页面
-  - 所有类型监控的交互式 ping（响应时间）图表
-  - 计划维护提醒和历史故障页面
-  - 响应式 UI，自适应PC/手机屏幕，及亮色/暗色系统主题
-  - 配置选项丰富的状态页面
-  - 可使用您自己的域名与 CNAME
-  - 可选的密码认证（私人状态页面）
-  - 用于获取实时状态数据的 JSON API
+编辑 `uptime.config.ts` 配置分组、通知和维护窗口。
 
-### 🆕增强功能（Fork）
+可以直接在状态页的管理面板添加和删除监测网站。管理面板会把网站条目保存到 `UPTIMEFLARE_CONFIG` KV 绑定，D1 只保存压缩后的监测状态。
 
-本 fork 版本新增了以下功能增强：
+```json
+[
+  {
+    "id": "website",
+    "name": "Website",
+    "method": "GET",
+    "target": "https://example.com",
+    "statusPageLink": "https://example.com",
+    "expectedCodes": [200],
+    "timeout": 10000
+  }
+]
+```
 
-- **现代化 UI 重新设计** — 使用 Tailwind CSS v4 刷新界面，加入毛玻璃效果和高级视觉设计
-- **监控卡片组件** — 独立的监控卡片，一目了然地展示状态、延迟和维护信息
-- **页面内自动刷新** — 通过 `/api/status` 接口每 180 秒轮询更新状态数据，无需全页面刷新
-- **带 CORS 保护的 Status API** — 安全的 `/api/status` 端点，基于来源的访问控制，防止跨域滥用
-- **故障详情弹窗** — 点击 uptime 时间条可查看详细的故障信息，包括持续时间和错误描述
-- **历史故障抽屉** — 滑出式抽屉浏览历史故障事件，支持按月份和监控项筛选
-- **实时事件展示** — 在事件抽屉中展示实际监控事件，包含持续中/已恢复状态
-- **移动端适配** — 优化的响应式布局，适配手机屏幕
-- **监控分组** — 重新组织监控分组，优化间距和布局
-- **人性化时间显示** — 改进故障时长的时间单位展示
-- **自定义站点图标** — 支持自定义 favicon
-- **本地开发支持** — 新增本地开发环境配置
+默认 Worker 定时任务位于 `wrangler.toml` 和 `worker/wrangler.toml`：
 
-## 👀演示
+```toml
+[triggers]
+crons = [ "*/10 * * * *" ]
+```
 
-我自己的状态页面（在线演示）：https://status.weizwz.com/
+GitHub Actions 部署时会自动创建并导入以下 Cloudflare 资源：
 
-一些截图：
+- D1 数据库：`uptimeflare_d1`
+- KV 命名空间：`uptimeflare_config`
 
-![Desktop, Light theme](docs/status.weizwz.com.webp)
+## 本地开发
 
-## ⚡快速入门 / 📄文档
+```bash
+# 启动本地 Next.js 应用
+npm run dev
 
-请参阅 [Wiki](https://github.com/lyc8503/UptimeFlare/wiki)
+# 构建应用
+npm run build
+```

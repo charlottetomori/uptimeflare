@@ -29,7 +29,7 @@ if not r['success']:
         exit(1)
     else:
         print("Unknown error creating D1 database: ", r)
-        print("Please report this issue at https://github.com/lyc8503/UptimeFlare/issues.")
+        print("Please inspect the Cloudflare API response and workflow permissions.")
         exit(1)
 else:
     print("D1 database created successfully: ", r)
@@ -51,7 +51,7 @@ for db in r['result']:
         break
 
 if d1_id == '':
-    print("D1 database not found after creation. Please report this issue at https://github.com/lyc8503/UptimeFlare/issues.")
+    print("D1 database not found after creation. Please inspect the Cloudflare API response and workflow permissions.")
     print("Full response: ", r)
     exit(1)
 print(f"Got D1 database ID: {d1_id}")

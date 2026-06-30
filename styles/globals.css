@@ -7,15 +7,71 @@
 
 body {
   font-family: var(--font-body);
-  background-color: #f5f7fa;
-  color: #1a202c;
+  background: #f6f7f9;
+  color: #111827;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Custom Utilities if needed */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(17, 24, 39, 0.08);
+}
+
+.status-shell {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 10%, rgba(49, 130, 246, 0.15), transparent 30rem),
+    radial-gradient(circle at 82% 4%, rgba(16, 185, 129, 0.12), transparent 26rem),
+    linear-gradient(180deg, #ffffff 0%, #f6f7f9 45%, #f3f4f6 100%);
+}
+
+.status-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: linear-gradient(rgba(17, 24, 39, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17, 24, 39, 0.045) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(to bottom, black, transparent 72%);
+}
+
+.ambient-orb {
+  animation: ambient-drift 16s ease-in-out infinite alternate;
+}
+
+.status-pulse {
+  position: relative;
+}
+
+.status-pulse::after {
+  animation: status-ring 2.8s ease-out infinite;
+  border: 1px solid currentColor;
+  border-radius: 9999px;
+  content: '';
+  inset: -6px;
+  opacity: 0.28;
+  position: absolute;
+}
+
+@keyframes ambient-drift {
+  from {
+    transform: translate3d(-16px, 8px, 0) scale(1);
+  }
+  to {
+    transform: translate3d(18px, -12px, 0) scale(1.08);
+  }
+}
+
+@keyframes status-ring {
+  from {
+    opacity: 0.28;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.7);
+  }
 }

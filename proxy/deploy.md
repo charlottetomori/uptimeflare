@@ -1,6 +1,6 @@
 # Proxy 部署到 Vercel
 
-此代理服务用于解决 UptimeFlare Worker 与 Cloudflare Pages/Workers 同账号部署时的回环限制问题，通过将监控请求转发至 Vercel 服务器发出，绕开 Cloudflare 的回环拦截。
+此代理服务用于解决状态页 Worker 与 Cloudflare Pages/Workers 同账号部署时的回环限制问题，通过将监控请求转发至 Vercel 服务器发出，绕开 Cloudflare 的回环拦截。
 
 ## 前置条件
 
@@ -39,7 +39,7 @@ vercel
 | Set up and deploy?                       | 回车确认                                                |
 | Which team?                              | 选择你的个人账号                                        |
 | Link to existing project?                | `N`                                                     |
-| Name?                                    | 输入名称 `uptimeflare-proxy` 或者回车使用默认名 `proxy` |
+| Name?                                    | 输入名称 `service-status-proxy` 或者回车使用默认名 `proxy` |
 | In which directory is your code located? | 回车（`./`）                                            |
 | Customize settings?                      | `N`                                                     |
 | Change additional project settings?      | `N`                                                     |
@@ -47,12 +47,12 @@ vercel
 部署完成后终端会输出访问地址，例如：
 
 ```
-https://uptimeflare-proxy.vercel.app
+https://service-status-proxy.vercel.app
 ```
 
-### 4. 更新 UptimeFlare 配置
+### 4. 更新状态页配置
 
-在 `uptime.config.ts` 的监控项中加入 `checkProxy`（仅当目标服务在 Cloudflare 且你的 UptimeFlare 与之同账号部署时）：
+在 `uptime.config.ts` 的监控项中加入 `checkProxy`（仅当目标服务在 Cloudflare 且你的状态页与之同账号部署时）：
 
 ```ts
 {
@@ -66,7 +66,7 @@ https://uptimeflare-proxy.vercel.app
 },
 ```
 
-提交代码后 UptimeFlare Worker 自动重新部署，下一个检测周期即生效。
+提交代码后 Worker 自动重新部署，下一个检测周期即生效。
 
 ## 后续更新
 

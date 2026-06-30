@@ -56,6 +56,11 @@ export type WorkerConfig<TEnv = Env> = {
   callbacks?: Callbacks<TEnv>
 }
 
+export type RuntimeBindings = {
+  UPTIMEFLARE_D1?: D1Database
+  UPTIMEFLARE_CONFIG?: KVNamespace
+}
+
 export type Notification = {
   webhook?: WebhookConfig
   timeZone?: string
@@ -119,7 +124,7 @@ export type MonitorState = {
 // local profiling result (1 op = parse + stringify):
 // MonitorState (original): 277 ops/s, ±0.51%   | slowest, 71.09% slower
 // MonitorStateCompacted:   958 ops/s, ±1.17%   | fastest
-// Real world test with 8 monitors and a few hundred incidents and full latency data (status.lyc8503.net):
+// Real world test with 8 monitors and a few hundred incidents and full latency data:
 // original: 433KB size, 11.24ms P50 cpu time, 18.11ms P99 cpu time
 // compacted: 181KB size (59% smaller), 6.36ms P50 cpu time (43% faster), 8.86ms P99 cpu time (51% faster)
 export type MonitorStateCompacted = {

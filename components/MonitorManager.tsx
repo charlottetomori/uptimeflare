@@ -1,0 +1,178 @@
+import { FormEvent, useEffect, useState } from 'react'
+
+type ManagedMonitor = {
+  id: string
+  name: string
+  target: string
+}
+
+type MonitorResponse = {
+  monitors?: ManagedMonitor[]
+  stored?: ManagedMonitor[]
+  error?: string
+}
+
+export default function MonitorManager() {
+  const [monitors, setMonitors] = useState<ManagedMonitor[]>([])
+  const [storedIds, setStoredIds] = useState<Set<string>>(new Set())
+  const [name, setName] = useState('')
+  const [target, setTarget] = useState('')
+  const [message, setMessage] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  async function loadMonitors() {
+    const res = await fetch('/api/monitors')
+    const data = (await res.json()) as MonitorResponse
+    setMonitors(data.monitors ?? [])
+    setStoredIds(new Set((data.stored ?? []).map((monitor) => monitor.id)))
+  }
+
+  function getErrorMessage(error: unknown, fallback: string) {
+    return error instanceof Error ? error.message : fallback
+  }
+
+  useEffect(() => {
+    loadMonitors().catch(() => setMessage('读取监测列表失败'))
+  }, [])
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setLoading(true)
+    setMessage('')
+
+    try {
+      const res = await fetch('/api/monitors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, target }),
+      })
+      const data = (await res.json()) as MonitorResponse
+
+      if (!res.ok) throw new Error(data.error || '添加失败')
+
+      setName('')
+      setTarget('')
+      setMessage('已添加。下一次 10 分钟自动检查后会生成状态数据。')
+      await loadMonitors()
+      window.location.reload()
+    } catch (error: unknown) {
+      setMessage(getErrorMessage(error, '添加失败'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function removeMonitor(id: string) {
+    setLoading(true)
+    setMessage('')
+
+    try {
+      const res = await fetch('/api/monitors', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      })
+      const data = (await res.json()) as MonitorResponse
+
+      if (!res.ok) throw new Error(data.error || '删除失败')
+
+      setMessage('已删除该监测项。')
+      await loadMonitors()
+      window.location.reload()
+    } catch (error: unknown) {
+      setMessage(getErrorMessage(error, '删除失败'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <section
+      id="monitor-manager"
+      className="mt-10 w-full rounded-[1.75rem] border border-slate-200/80 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur sm:p-6"
+    >
+      <div className="grid gap-7 lg:grid-cols-[0.9fr_1.1fr]">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.26em] text-slate-500">Websites</p>
+          <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-slate-950">
+            添加一个网站
+          </h2>
+          <p className="mt-3 text-sm leading-6 text-slate-600">
+            输入名称和网址，保存后会自动加入监测列表。
+          </p>
+
+          <form className="mt-6 space-y-4" onSubmit={submit}>
+            <label className="block">
+              <span className="text-sm font-medium text-slate-700">网站名称</span>
+              <input
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder="官网"
+                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              />
+            </label>
+
+            <label className="block">
+              <span className="text-sm font-medium text-slate-700">网站地址</span>
+              <input
+                value={target}
+                onChange={(event) => setTarget(event.target.value)}
+                placeholder="https://example.com"
+                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              />
+            </label>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+            >
+              {loading ? '处理中...' : '添加网站'}
+            </button>
+
+            {message && (
+              <p className="rounded-2xl bg-slate-100 px-4 py-3 text-sm text-slate-700">{message}</p>
+            )}
+          </form>
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between gap-4">
+            <h3 className="text-lg font-semibold text-slate-950">当前监测列表</h3>
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+              {monitors.length} 个
+            </span>
+          </div>
+
+          <div className="mt-4 space-y-3">
+            {monitors.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-slate-200 p-5 text-sm text-slate-500">
+                当前还没有网站。
+              </p>
+            ) : (
+              monitors.map((monitor) => (
+                <div
+                  key={monitor.id}
+                  className="flex flex-col gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="min-w-0">
+                    <div className="font-medium text-slate-950">{monitor.name}</div>
+                    <div className="mt-1 break-all text-xs text-slate-500">{monitor.target}</div>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={loading || !storedIds.has(monitor.id)}
+                    onClick={() => removeMonitor(monitor.id)}
+                    className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:border-slate-200 disabled:hover:bg-transparent disabled:hover:text-slate-600"
+                  >
+                    {storedIds.has(monitor.id) ? '删除' : '配置项'}
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}

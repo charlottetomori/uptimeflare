@@ -2,12 +2,10 @@ import { MaintenanceConfig, PageConfig, WorkerConfig } from './types/config'
 
 const pageConfig: PageConfig = {
   // Title for your status page
-  title: "lyc8503's Status Page",
+  title: 'Service Status',
   // Links shown at the header of your status page, could set `highlight` to `true`
   links: [
-    { link: 'https://github.com/lyc8503', label: 'GitHub' },
-    { link: 'https://blog.lyc8503.net/', label: 'Blog' },
-    { link: 'mailto:me@lyc8503.net', label: 'Email Me', highlight: true },
+    { link: 'https://example.com', label: 'Home' },
   ],
   // [OPTIONAL] Group your monitors
   // If not specified, all monitors will be shown in a single list
@@ -59,7 +57,7 @@ const workerConfig: WorkerConfig = {
       timeout: 10000,
       // [OPTIONAL] headers to be sent
       headers: {
-        'User-Agent': 'Uptimeflare',
+        'User-Agent': 'ServiceStatus/1.0',
         Authorization: 'Bearer YOUR_TOKEN_HERE',
       },
       // [OPTIONAL] body to be sent
@@ -69,7 +67,7 @@ const workerConfig: WorkerConfig = {
       // [OPTIONAL] if specified, the response must NOT contains the keyword to be considered as operational.
       responseForbiddenKeyword: 'bad gateway',
       // [OPTIONAL] if specified, will call the check proxy to check the monitor, mainly for geo-specific checks
-      // refer to docs https://github.com/lyc8503/UptimeFlare/wiki/Check-proxy-setup before setting this value
+      // Configure this only when you need a remote check proxy.
       // currently supports `worker://`, `globalping://` and `http(s)://` proxies
       checkProxy: 'https://xxx.example.com OR worker://weur',
       // [OPTIONAL] if true, the check will fallback to local if the specified proxy is down
@@ -91,7 +89,7 @@ const workerConfig: WorkerConfig = {
   // [Optional] Notification settings
   notification: {
     // [Optional] Notification webhook settings, if not specified, no notification will be sent
-    // More info at Wiki: https://github.com/lyc8503/UptimeFlare/wiki/Setup-notification
+    // Configure this only when you need status notifications.
     webhook: {
       // [Required] webhook URL (example: Telegram Bot API)
       url: 'https://api.telegram.org/bot123456:ABCDEF/sendMessage',

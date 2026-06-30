@@ -57,7 +57,7 @@ export default async function handler(req: NextRequest) {
   }
   try {
     const env = process.env as unknown as RuntimeEnv
-    const compactedStateStr = await getFromStore(env as Env, 'state')
+    const compactedStateStr = await getFromStore(env, 'state')
     return new Response(JSON.stringify({ compactedStateStr }), {
       status: 200,
       headers: {

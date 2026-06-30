@@ -47,7 +47,7 @@ export default async function handler(req: NextRequest): Promise<Response> {
     }
 
     const env = process.env as unknown as RuntimeEnv
-    const compactedState = new CompactedMonitorStateWrapper(await getFromStore(env as Env, 'state'))
+    const compactedState = new CompactedMonitorStateWrapper(await getFromStore(env, 'state'))
 
     const lastIncident = compactedState.getIncident(
       monitorId,

@@ -129,7 +129,7 @@ export default function Home({
 export async function getServerSideProps() {
   const env = process.env as unknown as RuntimeEnv
   // Read state as string from storage, to avoid hitting server-side cpu time limit
-  const compactedStateStr = await getFromStore(env as Env, 'state')
+  const compactedStateStr = await getFromStore(env, 'state')
 
   // Only present these values to client
   const monitors = (await getEffectiveWorkerConfig(env)).monitors.map((monitor) => {

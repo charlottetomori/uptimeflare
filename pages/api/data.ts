@@ -14,7 +14,7 @@ const headers = {
 
 export default async function handler(req: NextRequest): Promise<Response> {
   const env = process.env as unknown as RuntimeEnv
-  const compactedState = new CompactedMonitorStateWrapper(await getFromStore(env as Env, 'state'))
+  const compactedState = new CompactedMonitorStateWrapper(await getFromStore(env, 'state'))
 
   if (compactedState.data.lastUpdate === 0) {
     return new Response(JSON.stringify({ error: 'No data available' }), {

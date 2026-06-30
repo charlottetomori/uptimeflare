@@ -1,4 +1,3 @@
-import { Env } from '.'
 import {
   IncidentRecord,
   LatencyRecord,
@@ -6,9 +5,13 @@ import {
   MonitorStateCompacted,
 } from '../../types/config'
 
+type StoreEnv = {
+  UPTIMEFLARE_D1?: D1Database
+}
+
 const STORE_TABLE = 'uptimeflare'
 
-async function ensureStore(env: Env): Promise<void> {
+async function ensureStore(env: StoreEnv): Promise<void> {
   if (!env.UPTIMEFLARE_D1) return
   await env.UPTIMEFLARE_D1.exec(
     `CREATE TABLE IF NOT EXISTS ${STORE_TABLE} (key VARCHAR(255) PRIMARY KEY, value BLOB NOT NULL);`
@@ -23,7 +26,7 @@ function hexToBytes(hex: string): Uint8Array {
   return bytes
 }
 
-export async function getFromStore(env: Env, key: string): Promise<string | null> {
+export async function getFromStore(env: StoreEnv, key: string): Promise<string | null> {
   if (!env.UPTIMEFLARE_D1) return null
   try {
     const stmt = env.UPTIMEFLARE_D1.prepare(`SELECT value FROM ${STORE_TABLE} WHERE key = ?`)
@@ -35,7 +38,7 @@ export async function getFromStore(env: Env, key: string): Promise<string | null
   }
 }
 
-export async function setToStore(env: Env, key: string, value: string): Promise<void> {
+export async function setToStore(env: StoreEnv, key: string, value: string): Promise<void> {
   await ensureStore(env)
   const stmt = env.UPTIMEFLARE_D1.prepare(
     `INSERT INTO ${STORE_TABLE} (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value;`

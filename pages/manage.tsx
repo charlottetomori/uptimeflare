@@ -4,6 +4,8 @@ import MonitorManager from '@/components/MonitorManager'
 import { isAdminRequest } from '@/util/auth'
 import type { RuntimeEnv } from '@/util/runtimeConfig'
 
+export const runtime = 'experimental-edge'
+
 export default function ManagePage() {
   return (
     <>

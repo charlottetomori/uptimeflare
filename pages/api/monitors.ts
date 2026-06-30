@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { MonitorTarget } from '@/types/config'
 import {
-  getEffectiveWorkerConfig,
+  getWorkerConfig,
   getStoredMonitors,
   setStoredMonitors,
 } from '@/util/runtimeConfig'
@@ -95,20 +95,19 @@ export default async function handler(req: NextRequest): Promise<Response> {
   if (!isAdmin) return json({ error: '需要管理员登录' }, 401)
 
   if (req.method === 'GET') {
-    const config = await getEffectiveWorkerConfig(env)
     const stored = await getStoredMonitors(env)
-    return json({ monitors: config.monitors, stored })
+    const config = getWorkerConfig(env)
+    return json({ monitors: [...config.monitors, ...stored], stored })
   }
 
   if (req.method === 'POST') {
     try {
       const monitor = parseMonitor(await req.json())
-      const configuredIds = new Set(
-        (await getEffectiveWorkerConfig(env)).monitors.map((monitor) => monitor.id)
-      )
+      const configuredIds = new Set(getWorkerConfig(env).monitors.map((monitor) => monitor.id))
       const storedMonitors = await getStoredMonitors(env)
+      const existingIds = new Set([...configuredIds, ...storedMonitors.map((monitor) => monitor.id)])
 
-      if (configuredIds.has(monitor.id)) {
+      if (existingIds.has(monitor.id)) {
         return json({ error: '监测 ID 已存在，请换一个名称或 ID' }, 409)
       }
 

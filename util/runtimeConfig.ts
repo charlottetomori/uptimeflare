@@ -60,30 +60,11 @@ export function getWorkerConfig(env?: RuntimeEnv): WorkerConfig {
 }
 
 export async function getStoredMonitors(env?: RuntimeEnv): Promise<MonitorTarget[]> {
-  const kv = env?.UPTIMEFLARE_CONFIG
-  if (kv) {
-    try {
-      const value = await kv.get(STORED_MONITORS_KEY)
-      if (!value) return []
-      const monitors = JSON.parse(value) as MonitorTarget[]
-      return Array.isArray(monitors) ? monitors : []
-    } catch (error) {
-      console.error('Failed to read stored monitors from KV:', error)
-      return []
-    }
-  }
-
-  const db = env?.UPTIMEFLARE_D1 as D1Database | undefined
-  if (!db) return []
+  const value = await getRuntimeValue(env, STORED_MONITORS_KEY)
+  if (!value) return []
 
   try {
-    const result = await db
-      .prepare(`SELECT value FROM ${STORE_TABLE} WHERE key = ?`)
-      .bind(STORED_MONITORS_KEY)
-      .first<{ value: string }>()
-
-    if (!result?.value) return []
-    const monitors = JSON.parse(result.value) as MonitorTarget[]
+    const monitors = JSON.parse(value) as MonitorTarget[]
     return Array.isArray(monitors) ? monitors : []
   } catch (error) {
     console.error('Failed to read stored monitors:', error)

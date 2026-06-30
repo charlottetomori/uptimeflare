@@ -31,6 +31,10 @@ export default function MonitorCard({
     }
   })()
 
+  const previewUrl =
+    monitor.preview ||
+    (/^https?:\/\//.test(monitor.target) ? `https://image.thum.io/get/width/1200/${monitor.target}` : '')
+
   const incident = state.incident[monitor.id]
 
   // Check if monitor is in maintenance
@@ -266,10 +270,10 @@ export default function MonitorCard({
         {/* Preview Image Area */}
         <div className="aspect-video w-full overflow-hidden rounded-[1.25rem] bg-slate-100">
           <div className="relative h-full w-full overflow-hidden">
-            {monitor.preview ? (
+            {previewUrl ? (
               <a href={monitor.statusPageLink} target="_blank" rel="noopener noreferrer" className="block h-full w-full">
                 <Image
-                  src={monitor.preview}
+                  src={previewUrl}
                   alt={monitor.name}
                   fill
                   className="h-full w-full origin-top object-cover object-top transition-transform duration-700 group-hover:scale-105"

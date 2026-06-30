@@ -18,7 +18,7 @@ export default function AuthNav({ isAdmin }: { isAdmin: boolean }) {
       {isAdmin && (
         <Link
           href="/manage"
-          className="rounded-full border border-slate-200/80 bg-white/80 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white"
+          className="inline-flex h-9 items-center rounded-full border border-slate-200/80 bg-white/80 px-4 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white"
         >
           站点管理
         </Link>
@@ -27,14 +27,14 @@ export default function AuthNav({ isAdmin }: { isAdmin: boolean }) {
         <button
           type="button"
           onClick={logout}
-          className="rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800"
+          className="inline-flex h-9 items-center rounded-full bg-slate-950 px-4 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800"
         >
           退出
         </button>
       ) : (
         <Link
           href="/login"
-          className="rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800"
+          className="inline-flex h-9 items-center rounded-full bg-slate-950 px-4 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-slate-800"
         >
           登录
         </Link>

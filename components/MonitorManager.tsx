@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useEffect, useRef, useState } from 'react'
 
 type ManagedMonitor = {
   id: string
@@ -23,6 +23,8 @@ export default function MonitorManager() {
   const [preview, setPreview] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
+  const [groupOpen, setGroupOpen] = useState(false)
+  const groupBoxRef = useRef<HTMLDivElement>(null)
 
   const groupOptions = Array.from(
     new Set(['核心服务', ...monitors.map((monitor) => monitor.group || '核心服务')])
@@ -41,6 +43,15 @@ export default function MonitorManager() {
 
   useEffect(() => {
     loadMonitors().catch(() => setMessage('读取监测列表失败'))
+  }, [])
+
+  useEffect(() => {
+    function closeGroupOptions(event: MouseEvent) {
+      if (!groupBoxRef.current?.contains(event.target as Node)) setGroupOpen(false)
+    }
+
+    document.addEventListener('mousedown', closeGroupOptions)
+    return () => document.removeEventListener('mousedown', closeGroupOptions)
   }, [])
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -64,7 +75,6 @@ export default function MonitorManager() {
       setPreview('')
       setMessage('已添加。下一次 10 分钟自动检查后会生成状态数据。')
       await loadMonitors()
-      window.location.reload()
     } catch (error: unknown) {
       setMessage(getErrorMessage(error, '添加失败'))
     } finally {
@@ -88,7 +98,6 @@ export default function MonitorManager() {
 
       setMessage('已删除该监测项。')
       await loadMonitors()
-      window.location.reload()
     } catch (error: unknown) {
       setMessage(getErrorMessage(error, '删除失败'))
     } finally {
@@ -122,32 +131,59 @@ export default function MonitorManager() {
               />
             </label>
 
-            <label className="block">
+            <div className="relative" ref={groupBoxRef}>
               <span className="text-sm font-medium text-slate-700">分组</span>
-              <input
-                value={group}
-                onChange={(event) => setGroup(event.target.value)}
-                list="monitor-groups"
-                placeholder="核心服务"
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
-              />
-              <datalist id="monitor-groups">
-                {groupOptions.map((item) => (
-                  <option key={item} value={item} />
-                ))}
-              </datalist>
-            </label>
+              <div className="relative mt-2">
+                <input
+                  value={group}
+                  onChange={(event) => setGroup(event.target.value)}
+                  onFocus={() => setGroupOpen(true)}
+                  placeholder="核心服务"
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 pr-11 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+                />
+                <button
+                  type="button"
+                  onClick={() => setGroupOpen((open) => !open)}
+                  className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-xl text-slate-500 transition hover:bg-white hover:text-slate-950"
+                  aria-label="选择分组"
+                >
+                  <span className={`text-xs transition-transform ${groupOpen ? 'rotate-180' : ''}`}>▼</span>
+                </button>
+              </div>
+              {groupOpen && (
+                <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white/95 p-1.5 shadow-[0_18px_55px_rgba(15,23,42,0.12)] backdrop-blur">
+                  {groupOptions.map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => {
+                        setGroup(item)
+                        setGroupOpen(false)
+                      }}
+                      className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition ${
+                        item === group
+                          ? 'bg-slate-950 font-semibold text-white'
+                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950'
+                      }`}
+                    >
+                      <span>{item}</span>
+                      <span className="text-xs opacity-60">已有分组</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
             <label className="block">
               <span className="text-sm font-medium text-slate-700">封面图 URL</span>
               <input
                 value={preview}
                 onChange={(event) => setPreview(event.target.value)}
-                placeholder="https://your-image-host/example.png"
+                placeholder="留空自动生成网站截图"
                 className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               />
               <span className="mt-2 block text-xs leading-5 text-slate-500">
-                可粘贴图床地址；留空时显示默认云朵卡片。
+                可粘贴图床地址；留空时自动使用 image.thum.io 生成网站截图。
               </span>
             </label>
 

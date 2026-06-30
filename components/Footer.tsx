@@ -27,9 +27,6 @@ export default function Footer() {
           )}
         </div>
       </div>
-      <div className="fixed bottom-4 right-4 z-10 rounded-full border border-white/70 bg-white/75 px-3 py-1.5 text-xs font-semibold tracking-[-0.01em] text-slate-500 shadow-sm backdrop-blur">
-        by 第五个季节
-      </div>
     </footer>
   )
 }

@@ -37,3 +37,9 @@ Agent 在任务执行过程中发现的条目应遵循以下格式：
 - Instructions:
   - 设计 Cloudflare 存储方案时需要注意 D1 免费版写入额度，优先减少非必要 D1 写入。
   - 如果方案更稳妥，可以增加环境变量或 KV 数据绑定，不需要刻意避免新增绑定。
+
+[GitHub Actions 错误处理方式]
+- Date: 2026-06-30
+- Context: 用户说明 Actions 报错会主动发送日志
+- Instructions:
+  - 推送后不要持续轮询 GitHub Actions 状态，等待用户发送报错日志后再继续修复。

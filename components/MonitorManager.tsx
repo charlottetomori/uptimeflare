@@ -4,6 +4,8 @@ type ManagedMonitor = {
   id: string
   name: string
   target: string
+  group?: string
+  preview?: string
 }
 
 type MonitorResponse = {
@@ -17,8 +19,14 @@ export default function MonitorManager() {
   const [storedIds, setStoredIds] = useState<Set<string>>(new Set())
   const [name, setName] = useState('')
   const [target, setTarget] = useState('')
+  const [group, setGroup] = useState('核心服务')
+  const [preview, setPreview] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const groupOptions = Array.from(
+    new Set(['核心服务', ...monitors.map((monitor) => monitor.group || '核心服务')])
+  )
 
   async function loadMonitors() {
     const res = await fetch('/api/monitors')
@@ -44,7 +52,7 @@ export default function MonitorManager() {
       const res = await fetch('/api/monitors', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, target }),
+        body: JSON.stringify({ name, target, group, preview }),
       })
       const data = (await res.json()) as MonitorResponse
 
@@ -52,6 +60,8 @@ export default function MonitorManager() {
 
       setName('')
       setTarget('')
+      setGroup('核心服务')
+      setPreview('')
       setMessage('已添加。下一次 10 分钟自动检查后会生成状态数据。')
       await loadMonitors()
       window.location.reload()
@@ -91,14 +101,14 @@ export default function MonitorManager() {
       id="monitor-manager"
       className="mt-10 w-full rounded-[1.75rem] border border-slate-200/80 bg-white/85 p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur sm:p-6"
     >
-      <div className="grid gap-7 lg:grid-cols-[0.9fr_1.1fr]">
+      <div className="grid gap-7 lg:grid-cols-[0.95fr_1.05fr]">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.26em] text-slate-500">Websites</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.26em] text-slate-500">Manage</p>
           <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-slate-950">
-            添加一个网站
+            站点管理
           </h2>
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            输入名称和网址，保存后会自动加入监测列表。
+            添加监测地址、分组和封面图。新站点会在下一次 10 分钟自动检查后生成状态数据。
           </p>
 
           <form className="mt-6 space-y-4" onSubmit={submit}>
@@ -110,6 +120,35 @@ export default function MonitorManager() {
                 placeholder="官网"
                 className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
               />
+            </label>
+
+            <label className="block">
+              <span className="text-sm font-medium text-slate-700">分组</span>
+              <input
+                value={group}
+                onChange={(event) => setGroup(event.target.value)}
+                list="monitor-groups"
+                placeholder="核心服务"
+                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              />
+              <datalist id="monitor-groups">
+                {groupOptions.map((item) => (
+                  <option key={item} value={item} />
+                ))}
+              </datalist>
+            </label>
+
+            <label className="block">
+              <span className="text-sm font-medium text-slate-700">封面图 URL</span>
+              <input
+                value={preview}
+                onChange={(event) => setPreview(event.target.value)}
+                placeholder="https://your-image-host/example.png"
+                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-400 focus:bg-white"
+              />
+              <span className="mt-2 block text-xs leading-5 text-slate-500">
+                可粘贴图床地址；留空时显示默认云朵卡片。
+              </span>
             </label>
 
             <label className="block">
@@ -127,7 +166,7 @@ export default function MonitorManager() {
               disabled={loading}
               className="w-full rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
             >
-              {loading ? '处理中...' : '添加网站'}
+              {loading ? '处理中...' : '保存站点'}
             </button>
 
             {message && (
@@ -156,7 +195,12 @@ export default function MonitorManager() {
                   className="flex flex-col gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="min-w-0">
-                    <div className="font-medium text-slate-950">{monitor.name}</div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="font-medium text-slate-950">{monitor.name}</div>
+                      <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-slate-500 ring-1 ring-slate-200">
+                        {monitor.group || '核心服务'}
+                      </span>
+                    </div>
                     <div className="mt-1 break-all text-xs text-slate-500">{monitor.target}</div>
                   </div>
                   <button

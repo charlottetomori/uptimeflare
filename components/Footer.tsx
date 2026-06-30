@@ -4,7 +4,7 @@ export default function Footer() {
   const links = pageConfig.links || []
 
   return (
-    <footer className="mt-14 border-t border-stone-200 py-8 text-sm text-stone-500">
+    <footer className="mt-14 border-t border-slate-200 py-8 text-sm text-slate-500">
       <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 sm:flex-row sm:items-center sm:justify-between">
         <p>&copy; {new Date().getFullYear()} {pageConfig.title || '服务状态'}</p>
         <div className="flex flex-wrap items-center gap-4">
@@ -26,6 +26,9 @@ export default function Footer() {
             />
           )}
         </div>
+      </div>
+      <div className="fixed bottom-4 right-4 z-10 rounded-full border border-white/70 bg-white/75 px-3 py-1.5 text-xs font-semibold tracking-[-0.01em] text-slate-500 shadow-sm backdrop-blur">
+        by 第五个季节
       </div>
     </footer>
   )

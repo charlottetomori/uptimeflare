@@ -153,18 +153,11 @@ function IncidentCard({
       })
 
   return (
-    <div
-      className={`
-        ${isOngoing ? 'bg-red-50 border-l-red-500' : 'bg-amber-50 border-l-amber-500'}
-        border-l-4 rounded-lg shadow-sm
-        shadow-slate-200 border border-slate-200
-        px-4 py-3
-      `}
-    >
+    <div className="rounded-[1.35rem] border border-slate-200/80 bg-white/85 p-4 shadow-[0_16px_45px_rgba(15,23,42,0.07)] backdrop-blur">
       <div className="flex flex-col gap-2">
-        {/* 头部：监控名 + 状态 */}
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-2">
+            <span className={`h-2.5 w-2.5 rounded-full ${isOngoing ? 'bg-rose-500' : 'bg-amber-400'}`} />
             <IconAlertTriangle
               className={isOngoing ? 'text-red-500' : 'text-amber-500'}
               size={18}
@@ -186,8 +179,7 @@ function IncidentCard({
           </Badge>
         </div>
 
-        {/* 时间范围 */}
-        <div className="flex items-center gap-2 text-xs text-gray-600 flex-wrap">
+        <div className="flex items-center gap-2 text-xs text-slate-500 flex-wrap">
           <div className="flex items-center gap-1">
             <IconCalendar size={14} className={isOngoing ? 'text-red-400' : 'text-amber-400'} />
             <span>{startStr}</span>
@@ -201,13 +193,12 @@ function IncidentCard({
           <span className="font-medium">{formatDuration(incident.duration)}</span>
         </div>
 
-        {/* 错误详情 */}
         {incident.errors.length > 0 && (
           <div className="flex flex-col gap-1.5 mt-1">
             {incident.errors.map((err, idx) => (
               <div
                 key={idx}
-                className="flex flex-col gap-1 p-2 rounded-md border border-slate-100 bg-white/60"
+                className="flex flex-col gap-1 rounded-2xl border border-slate-100 bg-slate-50/80 p-3"
               >
                 {incident.errors.length > 1 && (
                   <div className="flex items-center gap-2">
@@ -220,7 +211,7 @@ function IncidentCard({
                     </div>
                   </div>
                 )}
-                <div className="text-xs text-slate-600 font-mono break-all">{err.error}</div>
+                <div className="break-all font-mono text-xs text-slate-600">{err.error}</div>
               </div>
             ))}
           </div>
@@ -289,25 +280,33 @@ export default function IncidentsDrawer({
       position="right"
       size="xl"
       title={
-        <Text size="xl" fw={800}>
-          {t('Incidents')}
-        </Text>
+        <div>
+          <Text size="xs" fw={700} c="dimmed" tt="uppercase" style={{ letterSpacing: '0.24em' }}>
+            History
+          </Text>
+          <Text size="xl" fw={800} mt={4}>
+            历史故障
+          </Text>
+        </div>
       }
       padding="xl"
+      styles={{ content: { background: '#f8fafc' }, header: { background: '#f8fafc' } }}
     >
       <Stack gap="lg">
-        <Select
-          placeholder={t('Select monitor')}
-          data={monitorOptions}
-          value={selectedMonitor}
-          onChange={handleMonitorChange}
-          clearable
-          leftSection={<IconFilter size={16} />}
-          radius="md"
-        />
+        <div className="rounded-[1.5rem] border border-white/70 bg-white/80 p-4 shadow-sm backdrop-blur">
+          <Select
+            placeholder={t('Select monitor')}
+            data={monitorOptions}
+            value={selectedMonitor}
+            onChange={handleMonitorChange}
+            clearable
+            leftSection={<IconFilter size={16} />}
+            radius="xl"
+          />
+        </div>
 
-        <Card padding="lg" radius="lg" withBorder>
-          <Group justify="space-between" mb="xl">
+        <Card padding="lg" radius="xl" withBorder style={{ borderColor: '#e2e8f0', background: 'rgba(255,255,255,0.82)' }}>
+          <Group justify="space-between" mb="xl" wrap="nowrap">
             <Button
               variant="subtle"
               leftSection={<IconChevronLeft size={18} />}
@@ -319,7 +318,7 @@ export default function IncidentsDrawer({
 
             <Group gap="xs">
               <IconCalendar size={20} style={{ opacity: 0.5 }} />
-              <Text fw={700} size="xl">
+              <Text fw={800} size="xl">
                 {selectedMonth}
               </Text>
             </Group>
@@ -335,12 +334,10 @@ export default function IncidentsDrawer({
           </Group>
 
           <Stack gap="md">
-            {/* 维护事件 */}
             {maintenanceEvents.map((m, i) => (
               <MaintenanceAlert key={`m-${i}`} maintenance={m} />
             ))}
 
-            {/* 真实故障记录 */}
             {filteredIncidents.length === 0 && maintenanceEvents.length === 0 ? (
               <NoIncidentsAlert />
             ) : (
@@ -349,7 +346,6 @@ export default function IncidentsDrawer({
               ))
             )}
 
-            {/* 分页组件 */}
             {totalPages > 1 && (
               <Group justify="center" mt="md">
                 <Pagination total={totalPages} value={activePage} onChange={setPage} />

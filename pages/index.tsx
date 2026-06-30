@@ -13,7 +13,8 @@ import { useTranslation } from 'react-i18next'
 import { CompactedMonitorStateWrapper, getFromStore } from '@/worker/src/store'
 import { getEffectiveWorkerConfig } from '@/util/runtimeConfig'
 import type { RuntimeEnv } from '@/util/runtimeConfig'
-import MonitorManager from '@/components/MonitorManager'
+import AuthNav from '@/components/AuthNav'
+import { isAdminRequest } from '@/util/auth'
 
 export const runtime = 'experimental-edge'
 const inter = Inter({ subsets: ['latin'] })
@@ -22,9 +23,11 @@ const STATUS_REFRESH_INTERVAL_MS = 10 * 60 * 1000
 export default function Home({
   compactedStateStr,
   monitors,
+  isAdmin,
 }: {
   compactedStateStr: string
   monitors: MonitorTarget[]
+  isAdmin: boolean
   tooltip?: string
   statusPageLink?: string
 }) {
@@ -35,9 +38,14 @@ export default function Home({
   )
 
   useEffect(() => {
-    setMonitorId(window.location.hash.substring(1))
+    const readHash = () => {
+      const nextId = window.location.hash.substring(1)
+      setMonitorId(nextId === 'monitor-manager' ? '' : nextId)
+    }
 
-    const handleHashChange = () => setMonitorId(window.location.hash.substring(1))
+    readHash()
+
+    const handleHashChange = readHash
     window.addEventListener('hashchange', handleHashChange)
 
     // Poll status updates every 10 minutes to match the Worker cron schedule.
@@ -77,10 +85,11 @@ export default function Home({
     <>
       <Head>
         <title>{pageConfig.title}</title>
-        <link rel="icon" href={pageConfig.favicon ?? '/favicon.ico'} type="image/x-icon" />
+        <link rel="icon" href={pageConfig.favicon ?? '/favicon.ico'} />
       </Head>
 
       <main className={`${inter.className} status-shell min-h-screen text-slate-950`}>
+        <AuthNav isAdmin={isAdmin} />
         <div className="ambient-orb pointer-events-none absolute right-[-6rem] top-20 h-72 w-72 rounded-full bg-blue-200/30 blur-3xl" />
         <div className="ambient-orb pointer-events-none absolute left-[-8rem] top-[28rem] h-80 w-80 rounded-full bg-emerald-200/25 blur-3xl" />
         <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
@@ -94,10 +103,9 @@ export default function Home({
                   尚未添加监测站点
                 </h1>
                 <p className="mt-6 max-w-xl text-base leading-7 text-slate-600">
-                  从下方管理区添加网站后，系统会按 10 分钟周期检测，并生成可用率、延迟和故障历史。
+                  管理员登录后可以在站点管理中添加网站，系统会按 10 分钟周期检测，并生成可用率、延迟和故障历史。
                 </p>
               </div>
-              <MonitorManager />
             </div>
           ) : state.lastUpdate === 0 ? (
             <div className="py-12 sm:py-16">
@@ -109,13 +117,11 @@ export default function Home({
                   监测数据会在 Worker 首次执行后显示，当前默认每 10 分钟自动检查一次。
                 </Text>
               </div>
-              <MonitorManager />
             </div>
           ) : (
             <>
               <OverallStatus state={state} monitors={monitors} maintenances={maintenances} />
               <MonitorList monitors={monitors} state={state} />
-              <MonitorManager />
             </>
           )}
         </div>
@@ -126,7 +132,7 @@ export default function Home({
   )
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps({ req }: { req: { headers: { cookie?: string } } }) {
   const env = process.env as unknown as RuntimeEnv
   // Read state as string from storage, to avoid hitting server-side cpu time limit
   const compactedStateStr = await getFromStore(env, 'state')
@@ -142,8 +148,15 @@ export async function getServerSideProps() {
       statusPageLink: monitor.statusPageLink,
       hideLatencyChart: monitor.hideLatencyChart,
       preview: monitor.preview,
+      group: monitor.group,
     }
   })
 
-  return { props: { compactedStateStr, monitors } }
+  return {
+    props: {
+      compactedStateStr,
+      monitors,
+      isAdmin: await isAdminRequest(env, req.headers.cookie),
+    },
+  }
 }

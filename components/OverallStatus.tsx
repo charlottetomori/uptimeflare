@@ -91,15 +91,6 @@ export default function OverallStatus({
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Button
-              component="a"
-              href="#monitor-manager"
-              variant="filled"
-              size="sm"
-              styles={{ root: { backgroundColor: '#020617', borderRadius: 999 } }}
-            >
-              添加网站
-            </Button>
-            <Button
               variant="default"
               size="sm"
               leftSection={<IconHistory size={15} />}

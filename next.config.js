@@ -7,6 +7,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'image.thum.io',
       },
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
     ],
   },
 }

@@ -1,18 +1,21 @@
 import Head from 'next/head'
 import Link from 'next/link'
 import MonitorManager from '@/components/MonitorManager'
+import { isAdminRequest } from '@/util/auth'
+import type { RuntimeEnv } from '@/util/runtimeConfig'
 
 export default function ManagePage() {
   return (
     <>
       <Head>
-        <title>添加网站 - 服务状态</title>
+        <title>站点管理 - 服务状态</title>
       </Head>
-      <main className="min-h-screen bg-[#f7f3eb] px-4 py-10 text-stone-950 sm:px-6 lg:px-8">
+      <main className="status-shell min-h-screen px-4 py-10 text-slate-950 sm:px-6 lg:px-8">
+        <div className="ambient-orb pointer-events-none absolute right-[-6rem] top-20 h-72 w-72 rounded-full bg-blue-200/30 blur-3xl" />
         <div className="mx-auto max-w-5xl">
           <Link
             href="/"
-            className="text-sm font-medium text-stone-500 transition-colors hover:text-stone-950"
+            className="text-sm font-semibold text-slate-500 transition-colors hover:text-slate-950"
           >
             返回状态页
           </Link>
@@ -22,4 +25,16 @@ export default function ManagePage() {
       </main>
     </>
   )
+}
+
+export async function getServerSideProps({ req }: { req: { headers: { cookie?: string } } }) {
+  const env = process.env as unknown as RuntimeEnv
+  if (await isAdminRequest(env, req.headers.cookie)) return { props: {} }
+
+  return {
+    redirect: {
+      destination: '/login',
+      permanent: false,
+    },
+  }
 }

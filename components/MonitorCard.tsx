@@ -323,13 +323,27 @@ export default function MonitorCard({
           <div className="absolute left-3 top-3 max-w-[calc(100%-150px)] overflow-hidden rounded-2xl border border-white/70 bg-white/90 px-3 py-2 shadow-sm backdrop-blur">
             {monitor.statusPageLink ? (
               <>
-                <h3 className="w-fit text-sm font-semibold leading-tight text-slate-950">{monitor.name}</h3>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="w-fit text-sm font-semibold leading-tight text-slate-950">{monitor.name}</h3>
+                  {monitor.group && (
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500">
+                      {monitor.group}
+                    </span>
+                  )}
+                </div>
                 {targetLabel && (
                   <div className="mt-0.5 text-[10px] font-mono text-slate-500">{targetLabel}</div>
                 )}
               </>
             ) : (
-              <h3 className="w-fit text-sm font-semibold leading-tight text-slate-950">{monitor.name}</h3>
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="w-fit text-sm font-semibold leading-tight text-slate-950">{monitor.name}</h3>
+                {monitor.group && (
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500">
+                    {monitor.group}
+                  </span>
+                )}
+              </div>
             )}
           </div>
         </div>

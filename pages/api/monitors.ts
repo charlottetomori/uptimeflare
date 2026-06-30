@@ -6,6 +6,7 @@ import {
   setStoredMonitors,
 } from '@/util/runtimeConfig'
 import type { RuntimeEnv } from '@/util/runtimeConfig'
+import { isAdminRequest } from '@/util/auth'
 
 export const runtime = 'edge'
 
@@ -37,6 +38,8 @@ function parseMonitor(input: unknown): MonitorTarget {
   const data = input && typeof input === 'object' ? (input as Record<string, unknown>) : {}
   const name = String(data.name ?? '').trim()
   const target = String(data.target ?? '').trim()
+  const group = String(data.group ?? '核心服务').trim() || '核心服务'
+  const preview = String(data.preview ?? '').trim()
   const timeout = Number(data.timeout ?? 10000)
 
   if (!name) throw new Error('请输入网站名称')
@@ -57,6 +60,15 @@ function parseMonitor(input: unknown): MonitorTarget {
     throw new Error('网站地址需要使用 http 或 https')
   }
 
+  if (preview) {
+    try {
+      const previewUrl = new URL(preview)
+      if (!['http:', 'https:'].includes(previewUrl.protocol)) throw new Error('invalid preview')
+    } catch {
+      throw new Error('封面图地址格式无效')
+    }
+  }
+
   const id = slugify(String(data.id ?? '') || `${url.hostname}-${name}`)
   if (!id) throw new Error('无法生成监测 ID')
 
@@ -66,6 +78,8 @@ function parseMonitor(input: unknown): MonitorTarget {
     method: 'GET',
     target: url.toString(),
     statusPageLink: url.toString(),
+    preview: preview || undefined,
+    group,
     expectedCodes: [200],
     timeout,
     hideLatencyChart: false,
@@ -76,6 +90,9 @@ export default async function handler(req: NextRequest): Promise<Response> {
   const env = process.env as unknown as RuntimeEnv
 
   if (req.method === 'OPTIONS') return new Response(null, { headers })
+
+  const isAdmin = await isAdminRequest(env, req.headers.get('cookie') ?? undefined)
+  if (!isAdmin) return json({ error: '需要管理员登录' }, 401)
 
   if (req.method === 'GET') {
     const config = await getEffectiveWorkerConfig(env)

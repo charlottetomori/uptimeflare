@@ -1,4 +1,4 @@
-import { MonitorTarget } from '../../types/config'
+import type { MonitorTarget } from '../../types/config'
 
 type NotificationContext = {
   monitor: MonitorTarget

@@ -19,15 +19,19 @@ export default function MonitorList({
 
   if (pageConfig.group) {
     for (const [groupName, monitorIds] of Object.entries(pageConfig.group)) {
-      sortedGroups.push(groupName)
-      groupedMonitors[groupName] = []
+      const groupMonitors: MonitorTarget[] = []
       monitorIds.forEach((id) => {
         const monitor = monitorMap.get(id)
         if (monitor) {
-          groupedMonitors[groupName].push(monitor)
+          groupMonitors.push(monitor)
           processedIds.add(id)
         }
       })
+
+      if (groupName === '核心服务' || groupMonitors.length > 0) {
+        sortedGroups.push(groupName)
+        groupedMonitors[groupName] = groupMonitors
+      }
     }
   }
 

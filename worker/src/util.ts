@@ -31,7 +31,6 @@ function withTimeout<T>(millis: number, promise: Promise<T>): Promise<T> {
 }
 
 const formatAndNotify = async (
-  env: any,
   monitor: MonitorTarget,
   isUp: boolean,
   timeIncidentStart: number,
@@ -60,7 +59,7 @@ const formatAndNotify = async (
     return
   }
 
-  await sendNotification(env, {
+  await sendNotification({
     monitor,
     isUp,
     timeIncidentStart,

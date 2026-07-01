@@ -117,7 +117,7 @@ const Worker = {
               currentTimeSecond - lastIncident.start[0] >=
                 (workerConfig.notification.gracePeriod + 1) * 60 - 30
             ) {
-              await formatAndNotify(env, monitor, true, lastIncident.start[0], currentTimeSecond, 'OK')
+              await formatAndNotify(monitor, true, lastIncident.start[0], currentTimeSecond, 'OK')
             } else {
               console.log(
                 `grace period (${workerConfig.notification?.gracePeriod}m) not met, skipping webhook UP notification for ${monitor.name}`
@@ -185,7 +185,6 @@ const Worker = {
               )
             } else {
               await formatAndNotify(
-                env,
                 monitor,
                 false,
                 currentIncident.start[0],

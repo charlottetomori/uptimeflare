@@ -106,8 +106,6 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           TF_VAR_CLOUDFLARE_ACCOUNT_ID: ${{ steps.fetch_account_id.outputs.account_id }}
-          TF_VAR_ID: ${{ secrets.ID }}
-          TF_VAR_APITOKEN: ${{ secrets.APITOKEN }}
           D1_ID: ${{ env.D1_ID }}
           KV_CONFIG_ID: ${{ env.KV_CONFIG_ID }}
 

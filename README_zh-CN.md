@@ -1,10 +1,10 @@
 # 服务状态页通知配置
 
-通知代码统一放在 `worker/src/notification.ts`。以后要改推送内容、推送地址、请求字段，直接改这个文件就行。
+这个项目的通知代码集中在 `worker/src/notification.ts`。想换成自己的推送渠道，主要改这个文件。
 
 ## 开启或关闭通知
 
-打开 `worker/src/notification.ts`，找到最前面的函数：
+打开 `worker/src/notification.ts`，看最前面的函数：
 
 ```ts
 export function shouldSendNotification() {
@@ -12,44 +12,45 @@ export function shouldSendNotification() {
 }
 ```
 
-`return true` 表示开启通知。
+`return true` 是开启通知。
 
-`return false` 表示关闭通知。
+`return false` 是关闭通知。
 
-## 修改通知内容
+## 修改推送接口
 
-通知文案在 `buildNotificationMessage()` 函数里。这个函数会分别处理恢复、首次故障、持续故障三种情况。
-
-要改通知文字，只改这个函数返回的字符串。
-
-## 修改第五个季节推送 API
-
-推送请求也在 `worker/src/notification.ts` 里，常用配置集中在这几行：
+在 `worker/src/notification.ts` 里找到这段：
 
 ```ts
-const FIFTH_SEASON_PUSH_URL = 'https://api.chuckfang.com/%E7%AC%AC%E4%BA%94%E4%B8%AA%E5%AD%A3%E8%8A%82'
-const PUSH_TIMEOUT_MS = 10000
-```
+// 通知区域修改开始
+const WEBHOOK_URL = 'https://api.chuckfang.com/%E7%AC%AC%E4%BA%94%E4%B8%AA%E5%AD%A3%E8%8A%82'
+const WEBHOOK_TIMEOUT_MS = 10000
+const WEBHOOK_HEADERS: Record<string, string> = {}
 
-`FIFTH_SEASON_PUSH_URL` 使用的是当前仓库原来就在用的第五个季节推送 API 地址。
-
-请求参数在 `buildPushPayload()` 里：
-
-```ts
-return {
-  id: getEnvValue(env, 'ID'),
-  apitoken: getEnvValue(env, 'APITOKEN'),
-  msg: message,
+function buildWebhookBody(message: string) {
+  return {
+    msg: message,
+  }
 }
+// 通知区域修改结束
 ```
 
-如果你的 API 字段名有变化，只改这里的字段名。
+把 `WEBHOOK_URL` 改成你的推送 API 地址。
 
-## 仓库需要配置的环境变量
+如果你的接口需要请求头，就改 `WEBHOOK_HEADERS`。
 
-在 GitHub 仓库的 Actions Secrets 里配置这两个变量：
+如果你的接口需要不同的请求字段，就改 `buildWebhookBody()` 返回的对象。
 
-- `ID`：第五个季节推送 API 的 ID
-- `APITOKEN`：第五个季节推送 API 的 apitoken
+## 修改通知文案
 
-部署时 GitHub Actions 会把这两个变量写入 Cloudflare Worker。Worker 发送通知时会读取 `ID` 和 `APITOKEN`。
+通知文案也在 `worker/src/notification.ts`，函数名是 `buildNotificationMessage()`。
+
+它会处理三种情况：恢复、刚发现故障、故障持续中。只改里面返回的文字就行。
+
+## GitHub Actions 需要配置的变量
+
+仓库的 Actions Secrets 里需要配置：
+
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
+
+这两个变量用于部署到 Cloudflare。通知接口自己的凭证按你的 webhook 要求写在 `worker/src/notification.ts` 的通知区域里。

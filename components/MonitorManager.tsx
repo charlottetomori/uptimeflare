@@ -162,12 +162,12 @@ export default function MonitorManager() {
                       }}
                       className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm transition ${
                         item === group
-                          ? 'bg-slate-950 font-semibold text-white'
+                          ? 'border border-sky-200 bg-sky-50 font-semibold text-sky-700'
                           : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950'
                       }`}
                     >
                       <span>{item}</span>
-                      <span className="text-xs opacity-60">已有分组</span>
+                      <span className="text-xs text-slate-400">已有分组</span>
                     </button>
                   ))}
                 </div>

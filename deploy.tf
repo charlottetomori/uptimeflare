@@ -21,6 +21,18 @@ variable "enable_do_migration" {
   default = false
 }
 
+variable "ID" {
+  type      = string
+  default   = ""
+  sensitive = true
+}
+
+variable "APITOKEN" {
+  type      = string
+  default   = ""
+  sensitive = true
+}
+
 resource "cloudflare_d1_database" "uptimeflare_d1" {
   account_id            = var.CLOUDFLARE_ACCOUNT_ID
   name                  = "uptimeflare_d1"
@@ -56,19 +68,31 @@ resource "cloudflare_workers_script" "uptimeflare_worker" {
     new_sqlite_classes = ["RemoteChecker"]
   } : null
 
-  bindings = [{
-    name       = "REMOTE_CHECKER_DO"
-    class_name = "RemoteChecker"
-    type       = "durable_object_namespace"
-    }, {
-    name = "UPTIMEFLARE_D1"
-    type = "d1"
-    id   = cloudflare_d1_database.uptimeflare_d1.id
-    }, {
-    name         = "UPTIMEFLARE_CONFIG"
-    type         = "kv_namespace"
-    namespace_id = cloudflare_workers_kv_namespace.uptimeflare_config.id
-  }]
+  bindings = concat(
+    [{
+      name       = "REMOTE_CHECKER_DO"
+      class_name = "RemoteChecker"
+      type       = "durable_object_namespace"
+      }, {
+      name = "UPTIMEFLARE_D1"
+      type = "d1"
+      id   = cloudflare_d1_database.uptimeflare_d1.id
+      }, {
+      name         = "UPTIMEFLARE_CONFIG"
+      type         = "kv_namespace"
+      namespace_id = cloudflare_workers_kv_namespace.uptimeflare_config.id
+    }],
+    var.ID != "" ? [{
+      name = "ID"
+      type = "secret_text"
+      text = var.ID
+    }] : [],
+    var.APITOKEN != "" ? [{
+      name = "APITOKEN"
+      type = "secret_text"
+      text = var.APITOKEN
+    }] : []
+  )
 }
 
 resource "cloudflare_workers_cron_trigger" "uptimeflare_worker_cron" {

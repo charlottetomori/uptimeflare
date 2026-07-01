@@ -51,15 +51,15 @@ export default async function handler(req: NextRequest): Promise<Response> {
     const password = String(body.password ?? '')
 
     if (action === 'setup') {
-      await createAdmin(env, username, password)
-      const token = await createSession(env)
+      const credentials = await createAdmin(env, username, password)
+      const token = await createSession(env, credentials)
       return json({ ok: true }, 201, { 'Set-Cookie': sessionCookie(token) })
     }
 
     if (action === 'login') {
-      const ok = await verifyAdmin(env, username, password)
-      if (!ok) return json({ error: '账号或密码错误' }, 401)
-      const token = await createSession(env)
+      const credentials = await verifyAdmin(env, username, password)
+      if (!credentials) return json({ error: '账号或密码错误' }, 401)
+      const token = await createSession(env, credentials)
       return json({ ok: true }, 200, { 'Set-Cookie': sessionCookie(token) })
     }
 

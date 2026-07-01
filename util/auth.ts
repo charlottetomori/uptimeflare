@@ -2,12 +2,16 @@ import { getRuntimeValue, setRuntimeValue } from './runtimeConfig'
 import type { RuntimeEnv } from './runtimeConfig'
 
 const ADMIN_KEY = 'admin_credentials'
-const SESSION_KEY = 'admin_session'
 export const SESSION_COOKIE = 'status_admin_session'
 
 type AdminCredentials = {
   username: string
   salt: string
+  passwordHash: string
+}
+
+type AdminCookie = {
+  username: string
   passwordHash: string
 }
 
@@ -28,6 +32,37 @@ function randomHex(length = 16) {
 async function hashPassword(password: string, salt: string) {
   const data = new TextEncoder().encode(`${salt}:${password}`)
   return bytesToHex(await crypto.subtle.digest('SHA-256', data))
+}
+
+function encodeAdminCookie(credentials: AdminCredentials) {
+  const value = JSON.stringify({
+    username: credentials.username,
+    passwordHash: credentials.passwordHash,
+  } satisfies AdminCookie)
+  const bytes = new TextEncoder().encode(value)
+  let binary = ''
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte)
+  })
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+function decodeAdminCookie(token: string): AdminCookie | null {
+  try {
+    const base64 = token.replace(/-/g, '+').replace(/_/g, '/')
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=')
+    const binary = atob(padded)
+    const bytes = new Uint8Array(binary.length)
+    for (let index = 0; index < binary.length; index += 1) {
+      bytes[index] = binary.charCodeAt(index)
+    }
+
+    const value = JSON.parse(new TextDecoder().decode(bytes)) as AdminCookie
+    if (!value.username || !value.passwordHash) return null
+    return value
+  } catch {
+    return null
+  }
 }
 
 export async function getAdminCredentials(env: RuntimeEnv): Promise<AdminCredentials | null> {
@@ -59,29 +94,38 @@ export async function createAdmin(env: RuntimeEnv, username: string, password: s
     passwordHash: await hashPassword(password, salt),
   }
   await setRuntimeValue(env, ADMIN_KEY, JSON.stringify(credentials))
+  return credentials
 }
 
 export async function verifyAdmin(env: RuntimeEnv, username: string, password: string) {
   const credentials = await getAdminCredentials(env)
-  if (!credentials) return false
-  if (credentials.username !== username.trim()) return false
-  return credentials.passwordHash === (await hashPassword(password, credentials.salt))
+  if (!credentials) return null
+  if (credentials.username !== username.trim()) return null
+  if (credentials.passwordHash !== (await hashPassword(password, credentials.salt))) return null
+  return credentials
 }
 
-export async function createSession(env: RuntimeEnv) {
-  const token = crypto.randomUUID ? crypto.randomUUID() : randomHex(32)
-  await setRuntimeValue(env, SESSION_KEY, token)
-  return token
+export async function createSession(env: RuntimeEnv, credentials?: AdminCredentials) {
+  const admin = credentials ?? (await getAdminCredentials(env))
+  if (!admin) throw new Error('管理员不存在')
+  return encodeAdminCookie(admin)
 }
 
 export async function validateSession(env: RuntimeEnv, token?: string | null) {
   if (!token) return false
-  const stored = await getRuntimeValue(env, SESSION_KEY)
-  return Boolean(stored && stored === token)
+  const cookie = decodeAdminCookie(token)
+  if (!cookie) return false
+
+  const credentials = await getAdminCredentials(env)
+  return Boolean(
+    credentials &&
+      credentials.username === cookie.username &&
+      credentials.passwordHash === cookie.passwordHash
+  )
 }
 
 export async function clearSession(env: RuntimeEnv) {
-  await setRuntimeValue(env, SESSION_KEY, '')
+  return
 }
 
 export function getCookieValue(cookieHeader: string | undefined, name: string) {

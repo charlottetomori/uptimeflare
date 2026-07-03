@@ -60,10 +60,7 @@ export default async function handler(req: NextRequest) {
     const compactedStateStr = await getFromStore(env, 'state')
     return new Response(JSON.stringify({ compactedStateStr }), {
       status: 200,
-      headers: {
-        'content-type': 'application/json',
-        'cache-control': 'public, s-maxage=10, stale-while-revalidate=59',
-      },
+      headers: corsHeaders,
     })
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : 'Failed to read status'

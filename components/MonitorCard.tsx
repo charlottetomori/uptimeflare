@@ -199,13 +199,30 @@ export default function MonitorCard({
     return `${hours}h`
   }
 
-  // Last update time (mocked for now based on state.lastUpdate or specific monitor usage)
   const timeInfo = state.lastUpdate ? formatTimeAgo(state.lastUpdate) : 'now'
 
   const totalPercent =
     totalMonitorTime > 0
       ? (((totalMonitorTime - totalDownTime) / totalMonitorTime) * 100).toFixed(2)
       : '0.00'
+
+  const statusDotClass =
+    status === 'maintenance'
+      ? 'bg-amber-500'
+      : status === 'up'
+      ? 'bg-emerald-500'
+      : status === 'pending'
+      ? 'bg-slate-400'
+      : 'bg-rose-500'
+
+  const statusLabel =
+    status === 'maintenance'
+      ? t('Maintenance')
+      : status === 'up'
+      ? t('Operational')
+      : status === 'pending'
+      ? 'Waiting for check'
+      : t('Down')
 
   return (
     <>
@@ -302,23 +319,9 @@ export default function MonitorCard({
             `}
             >
               <div
-                className={`h-2 w-2 rounded-full ${
-                  status === 'maintenance'
-                    ? 'bg-amber-500'
-                    : status === 'up'
-                    ? 'bg-emerald-500'
-                    : status === 'pending'
-                    ? 'bg-slate-400'
-                    : 'bg-rose-500'
-                }`}
+                className={`h-2 w-2 rounded-full ${statusDotClass}`}
               />
-              {status === 'maintenance'
-                ? t('Maintenance')
-                : status === 'up'
-                ? t('Operational')
-                : status === 'pending'
-                ? 'Pending'
-                : t('Down')}
+              {statusLabel}
             </div>
           </div>
 
@@ -365,11 +368,9 @@ export default function MonitorCard({
         <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4 text-xs font-medium text-slate-500">
           <div className="flex items-center gap-1.5">
             <div
-              className={`h-1.5 w-1.5 rounded-full ${
-                status === 'pending' ? 'bg-slate-400' : 'bg-emerald-500'
-              }`}
+              className={`h-2.5 w-2.5 rounded-full ${statusDotClass}`}
             />
-            <span>{status === 'pending' ? 'Waiting for check' : t('check_label', { defaultValue: 'Checked' })}</span>
+            <span>{statusLabel}</span>
             {status !== 'pending' && <span className="text-slate-400">{timeInfo} ago</span>}
           </div>
           <div className="flex items-center gap-1 rounded-xl bg-slate-100 px-2 py-1">

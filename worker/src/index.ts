@@ -118,8 +118,13 @@ async function checkMonitor(
 
 const Worker = {
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
-    const workerLocation = (await getWorkerLocation()) || 'ERROR'
     const workerConfig = await getEffectiveWorkerConfig(env)
+    if (workerConfig.monitors.length === 0) {
+      console.log('No monitors configured, skipping scheduled check.')
+      return
+    }
+
+    const workerLocation = (await getWorkerLocation()) || 'ERROR'
     console.log(`Running scheduled event on ${workerLocation}...`)
 
     // Create a wrapped MonitorState from stored compacted state

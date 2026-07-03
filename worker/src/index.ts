@@ -14,6 +14,8 @@ export interface Env {
 }
 
 const MONITOR_CHECK_CONCURRENCY = 4
+const MONITOR_FAILURE_CONFIRMATION_ATTEMPTS = 3
+const MONITOR_FAILURE_RETRY_DELAY_MS = 5000
 
 type MonitorCheckResult = {
   monitor: MonitorTarget
@@ -26,7 +28,11 @@ type MonitorCheckResult = {
   }
 }
 
-async function checkMonitor(
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+async function checkMonitorOnce(
   env: Env,
   monitor: MonitorTarget,
   workerLocation: string
@@ -87,6 +93,29 @@ async function checkMonitor(
   }
 }
 
+async function checkMonitor(
+  env: Env,
+  monitor: MonitorTarget,
+  workerLocation: string
+): Promise<MonitorCheckResult> {
+  let lastResult: MonitorCheckResult | null = null
+
+  for (let attempt = 1; attempt <= MONITOR_FAILURE_CONFIRMATION_ATTEMPTS; attempt += 1) {
+    const result = await checkMonitorOnce(env, monitor, workerLocation)
+    if (result.status.up) return result
+
+    lastResult = result
+    if (attempt < MONITOR_FAILURE_CONFIRMATION_ATTEMPTS) {
+      console.log(
+        `[${workerLocation}] ${monitor.name} failed check ${attempt}/${MONITOR_FAILURE_CONFIRMATION_ATTEMPTS}, retrying in ${MONITOR_FAILURE_RETRY_DELAY_MS}ms...`
+      )
+      await wait(MONITOR_FAILURE_RETRY_DELAY_MS)
+    }
+  }
+
+  return lastResult!
+}
+
 const Worker = {
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
     const workerLocation = (await getWorkerLocation()) || 'ERROR'
@@ -137,19 +166,7 @@ const Worker = {
 
             monitorStatusChanged = true
             try {
-              if (
-                // grace period not set OR ...
-                workerConfig.notification?.gracePeriod === undefined ||
-                // only when we have sent a notification for DOWN status, we will send a notification for UP status (within 30 seconds of possible drift)
-                currentTimeSecond - lastIncident.start[0] >=
-                  (workerConfig.notification.gracePeriod + 1) * 60 - 30
-              ) {
-                await formatAndNotify(monitor, true, lastIncident.start[0], currentTimeSecond, 'OK')
-              } else {
-                console.log(
-                  `grace period (${workerConfig.notification?.gracePeriod}m) not met, skipping webhook UP notification for ${monitor.name}`
-                )
-              }
+              await formatAndNotify(monitor, true, lastIncident.start[0], currentTimeSecond, 'OK')
 
               console.log('Calling config onStatusChange callback...')
               await workerConfig.callbacks?.onStatusChange?.(

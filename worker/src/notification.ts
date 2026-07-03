@@ -26,28 +26,37 @@ function buildNotificationMessage({
   reason,
   timeZone,
 }: NotificationContext) {
-  const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
-    month: 'numeric',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-    timeZone,
-  })
+  function formatTime(timestamp: number) {
+    const parts = new Intl.DateTimeFormat('zh-CN', {
+      month: 'numeric',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone,
+    }).formatToParts(new Date(timestamp * 1000))
+
+    const values = parts.reduce<Record<string, string>>((result, part) => {
+      result[part.type] = part.value
+      return result
+    }, {})
+
+    return `${values.month}/${values.day}, ${values.hour}:${values.minute}`
+  }
 
   const downtimeMinutes = Math.round((timeNow - timeIncidentStart) / 60)
-  const timeNowFormatted = dateFormatter.format(new Date(timeNow * 1000))
-  const timeIncidentStartFormatted = dateFormatter.format(new Date(timeIncidentStart * 1000))
+  const timeNowFormatted = formatTime(timeNow)
+  const timeIncidentStartFormatted = formatTime(timeIncidentStart)
 
   if (isUp) {
-    return `[${monitor.name}] 已恢复正常\n服务中断约 ${downtimeMinutes} 分钟，现在已经恢复。`
+    return `🟢 [${monitor.name}] 已恢复正常。\n服务自 ${timeNowFormatted} 起恢复可用，本次中断持续 ${downtimeMinutes} 分钟。`
   }
 
   if (timeNow === timeIncidentStart) {
-    return `[${monitor.name}] 当前不可用\n发现时间：${timeNowFormatted}\n原因：${reason || '未说明'}`
+    return `🔴 [${monitor.name}] 已宕机。\n服务自 ${timeNowFormatted} 起不可用。\n原因: ${reason || '未说明'}`
   }
 
-  return `[${monitor.name}] 仍然不可用\n开始时间：${timeIncidentStartFormatted}\n已持续：${downtimeMinutes} 分钟\n原因：${reason || '未说明'}`
+  return `🔴 [${monitor.name}] 依然宕机。\n服务自 ${timeIncidentStartFormatted} 起不可用 (已持续 ${downtimeMinutes} 分钟)。\n原因: ${reason || '未说明'}`
 }
 
 function buildWebhookBody(message: string) {
